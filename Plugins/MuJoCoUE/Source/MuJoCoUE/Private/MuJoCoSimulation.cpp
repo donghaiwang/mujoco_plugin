@@ -241,12 +241,13 @@ AMuJoCoSimulation::AMuJoCoSimulation()
 	bSimulationRunning = false;
 }
 
+// 场景开始
 void AMuJoCoSimulation::BeginPlay()
 {
 	Super::BeginPlay();
 	mData = nullptr;
 	mModel = nullptr;
-	LoadModel(XmlSourcePath);
+	LoadModel(XmlSourcePath);  // 解析 mujoco 的 xml 模型
 	if (mModel)
 	{
 		_info = ExtractModelInfo(mModel);

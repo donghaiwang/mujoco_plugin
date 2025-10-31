@@ -1,4 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
+// FMuJoCoUEModule (模块管理)
+// 功能: 负责插件的初始化和资源管理
 
 #include "MuJoCoUE.h"
 
@@ -6,11 +8,13 @@
 
 #define LOCTEXT_NAMESPACE "FMuJoCoUEModule"
 
+// 模块初始化：加载 dll 文件
 void FMuJoCoUEModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+	// 这段代码会在模块加载到内存后执行；具体的执行时间在每个模块的 .uplugin 文件中指定。
 	FString DLLPath = IPluginManager::Get().FindPlugin("MuJoCoUE")->GetBaseDir();
 
+	// hutb\Unreal\CarlaUE4\Plugins\mujoco_plugin\Plugins\MuJoCoUE\Binaries\mujoco.dll
 	DLLPath = DLLPath + TEXT("/Binaries/mujoco.dll");
 
 	DLLHandle = FPlatformProcess::GetDllHandle(*DLLPath);
@@ -19,8 +23,8 @@ void FMuJoCoUEModule::StartupModule()
 
 void FMuJoCoUEModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
+	// 此函数可能会在关闭期间调用，用于清理模块。
+	// 对于支持动态重载的模块，我们会在卸载模块之前调用此函数。
 	FPlatformProcess::FreeDllHandle(DLLHandle);
 }
 
