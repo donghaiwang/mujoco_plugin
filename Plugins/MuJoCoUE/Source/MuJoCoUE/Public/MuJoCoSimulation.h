@@ -15,11 +15,11 @@
  * @struct BodyInfo
  * @brief Contains information about a body extracted form the MuJoCo Model and Data.
  *
- * @property std::string name - The name of the body.
- * @property int parent_id - The ID of the parent body.
- * @property mjtNum[3] pos - The position of the body as a 3D vector.
- * @property mjtNum[4] quat - The orientation of the body as a quaternion in MuJoCo format.
- * @property FQuat quat2 - The orientation of the body as an Unreal Engine quaternion.
+ * @property std::string name - 刚体名称。
+ * @property int parent_id - 父刚体的 ID
+ * @property mjtNum[3] pos - 身体位置的三维向量。
+ * @property mjtNum[4] quat - MuJoCo 格式中刚体的四元数方向。
+ * @property FQuat quat2 - 刚体方向以引擎的四元数表示。
  */
 struct BodyInfo
 {
@@ -86,13 +86,12 @@ struct GeomInfo
 
 /**
  * @struct ModelInfo
- * @brief Represents information about a MuJoCo model.
+ * @brief 表示有关 MuJoCo 模型的信息。
  *
- * This structure contains collections of body and geometry MuJoCo information
- * that we might need inside the Unreal Engine.
+ * 该结构包含我们在引擎中可能需要的 MuJoCo 身体和几何信息集合。
  *
- * @member bodies A vector of BodyInfo structures representing the physical bodies in the model.
- * @member geoms A vector of GeomInfo structures representing the geometric shapes in the model.
+ * @member bodies 包含刚体信息(BodyInfo)结构的向量，表示模型中的物理实体（具有质量、惯性等物理属性）。
+ * @member geoms 表示模型中几何形状的几何体信息(GeomInfo)结构向量。定义了外观和碰撞检测边界。
  */
 struct ModelInfo
 {
