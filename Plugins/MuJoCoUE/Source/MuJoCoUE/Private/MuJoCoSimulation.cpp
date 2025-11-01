@@ -542,7 +542,7 @@ void AMuJoCoSimulation::ConvertMuJoCoModelToProceduralMeshes(const mjModel *mjMo
 		// Add to output array
 
 		ProceduralMeshes.Add(ProcMesh);
-		ProcMesh->SetVisibility(true);  // 初始不可见
+		ProcMesh->SetVisibility(false);  // 初始不可见
 	}
 
 	return;
