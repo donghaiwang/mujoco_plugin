@@ -148,7 +148,8 @@ void AMuJoCoSimulation::GenerateMeshes(ModelInfo &modelInfo)
 		{
 			// 把场景组件提升为RootComponent，否则创建出来的场景组件永远在(0,0,0)点，即使Actor点位置动态改变场景组件绝对位置也不随Actor改变
 			sceneComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-			sceneComponent->SetHiddenInGame(false, true);
+			// sceneComponent->SetupAttachment(RootComponent);
+			// sceneComponent->SetHiddenInGame(false, true);
 		}
 		else  // 子刚体(body)的处理来进行层级维护
 		{
@@ -204,6 +205,7 @@ void AMuJoCoSimulation::GenerateMeshes(ModelInfo &modelInfo)
 				mesh = defaultMesh;
 		}
 
+		// staticMeshComponent->SetupAttachment(RootComponent);
 		staticMeshComponent->SetStaticMesh(mesh);  // 设置网格
 		SetMeshColor(staticMeshComponent, geomInfo.color);  // 设置颜色
 		staticMeshComponent->SetSimulatePhysics(false);  // 禁用物理模拟
@@ -251,6 +253,29 @@ AMuJoCoSimulation::AMuJoCoSimulation()
 	mData = nullptr;
 	mModel = nullptr;
 	bSimulationRunning = false;
+
+	// 加载默认纹理  UStaticMesh
+	// add Cylinder to root
+	UStaticMeshComponent* Cylinder = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
+	Cylinder->SetupAttachment(RootComponent);
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CylinderAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder"));
+	if (CylinderAsset.Succeeded())
+	{
+		Cylinder->SetStaticMesh(CylinderAsset.Object);
+		Cylinder->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+		Cylinder->SetWorldScale3D(FVector(1.f));
+	}
+
+	// 创建默认网格
+	// //设定模型名字
+	// FString MeshName = "SM_Plane";
+	// //设定包的路径
+	// FString PackageName = "/Game/Carla/Static/" + MeshName;
+	// //创建包
+	// UPackage* MeshPackage = CreatePackage(nullptr, *PackageName);
+	// //创建StaticMesh资源
+	// UStaticMesh* StaticMesh = NewObject< UStaticMesh >(MeshPackage, FName(*MeshName), RF_Public | RF_Standalone);
+	// defaultMesh = StaticMesh;
 }
 
 // 开始仿真
@@ -266,6 +291,7 @@ void AMuJoCoSimulation::BeginPlay()
 		ConvertMuJoCoModelToProceduralMeshes(mModel, this); // 处理复杂网格几何体：将MuJoCo模型中的网格数据转换为Engine的程序化网格组件
 		GenerateMeshes(_info);  // 将提取的模型信息转换为引擎中的实际场景组件
 	}
+	StartSimulation();
 	UE_LOG(LogTemp, Warning, TEXT("Mujoco begin play."));
 }
 

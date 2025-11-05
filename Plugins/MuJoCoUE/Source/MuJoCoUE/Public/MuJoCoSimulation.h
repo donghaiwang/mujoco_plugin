@@ -8,6 +8,7 @@
 
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
 // #include "Components/InstancedStaticMeshComponent.h"
 #include "MuJoCoSimulation.generated.h"
@@ -191,6 +192,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MuJoCo")
 	TMap<int, UStaticMesh *> MeshAssets;
 
+	// 默认的纹理
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MuJoCo")
 	UStaticMesh *defaultMesh;
 
