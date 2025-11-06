@@ -171,7 +171,7 @@ void AMuJoCoSimulation::GenerateMeshes(ModelInfo &modelInfo)
 		staticMeshComponent->AttachToComponent(this->BodyMap[geomInfo.body_id], FAttachmentTransformRules::KeepRelativeTransform);
 		;
 		// 获得该几何体的网格
-		// MeshAssets映射表：预配置的几何体类型到StaticMesh的映射
+		// MeshAssets映射表：预配置的几何体类型到 StaticMesh 的映射
 		auto *mesh = MeshAssets.Find(geomInfo.type) ? MeshAssets[geomInfo.type] : nullptr;
 		// 如果 type = mesh 生成程序化网格
 		if (!mesh)
@@ -205,7 +205,6 @@ void AMuJoCoSimulation::GenerateMeshes(ModelInfo &modelInfo)
 				mesh = defaultMesh;
 		}
 
-		// staticMeshComponent->SetupAttachment(RootComponent);
 		staticMeshComponent->SetStaticMesh(mesh);  // 设置网格
 		SetMeshColor(staticMeshComponent, geomInfo.color);  // 设置颜色
 		staticMeshComponent->SetSimulatePhysics(false);  // 禁用物理模拟
@@ -253,9 +252,9 @@ AMuJoCoSimulation::AMuJoCoSimulation()
 	mData = nullptr;
 	mModel = nullptr;
 	bSimulationRunning = false;
+	XmlSourcePath = TEXT("mujoco/pendulum.xml");
 
-	// 加载默认纹理  UStaticMesh
-	// add Cylinder to root
+	// 使用一个圆柱体作为模型的替代，否则拖进去看不到
 	UStaticMeshComponent* Cylinder = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
 	Cylinder->SetupAttachment(RootComponent);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CylinderAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder"));
@@ -266,16 +265,10 @@ AMuJoCoSimulation::AMuJoCoSimulation()
 		Cylinder->SetWorldScale3D(FVector(1.f));
 	}
 
-	// 创建默认网格
-	// //设定模型名字
-	// FString MeshName = "SM_Plane";
-	// //设定包的路径
-	// FString PackageName = "/Game/Carla/Static/" + MeshName;
-	// //创建包
-	// UPackage* MeshPackage = CreatePackage(nullptr, *PackageName);
-	// //创建StaticMesh资源
-	// UStaticMesh* StaticMesh = NewObject< UStaticMesh >(MeshPackage, FName(*MeshName), RF_Public | RF_Standalone);
-	// defaultMesh = StaticMesh;
+	// 使用对象查找器在类的构造函数中自动加载网格
+	// 这只是静态网格体，要实际使用它，后面需要将其分配给 StaticMeshComponent
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh(TEXT("StaticMesh'/Game/Carla/Static/SM_Plane.SM_Plane'"));
+	defaultMesh = StaticMesh.Object;
 }
 
 // 开始仿真
