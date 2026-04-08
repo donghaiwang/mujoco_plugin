@@ -89,7 +89,7 @@ Geometric: InsideSite, GeomDist, GeomNormal, GeomFromTo
 
 有关相机 API 的详细信息，请参阅 [蓝图参考文档](guides/blueprint_reference.md#mjkeyframecameraactor) 。
 
-## 网络 (ZMQ)
+## 网络 (Zero Message Queue、ZMQ)
 
 采用二进制发布/订阅协议广播关节状态、传感器和摄像头图像。接收执行器目标值和PD增益。针对多关节场景采用基于前缀的滤波。
 
