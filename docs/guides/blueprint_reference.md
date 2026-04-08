@@ -63,8 +63,8 @@ FVector2D Range = Robot->GetActuatorRange("shoulder");
 **蓝图：**
 
 - **获取传感器标量(Get Sensor Scalar)** (名称) → Float — 适用于 1D 传感器 (触摸, 关节位置, 时钟)
-- **Get Sensor Reading** (name) → Array of Float — for vector sensors (force, accelerometer)
-- **Get Joint Angle** (name) → Float — shortcut for joint position
+- **获取传感器读数** (名称) → Float 数组 — 适用于向量传感器（力、加速度）
+- **获取关节角度** (名称) → Float — 关节位置的快捷方式
 
 **C++:**
 ```cpp
@@ -75,11 +75,11 @@ float Angle = Robot->GetJointAngle("elbow");
 
 ---
 
-## Reacting to Collisions
+## 碰撞响应
 
-`AMjArticulation` has an **On Collision** event dispatcher. Fires with: `SelfGeom` (UMjGeom*), `OtherGeom` (UMjGeom*), `ContactPos` (FVector).
+`AMjArticulation` 具有 **碰撞时(On Collision)**事件分发器。触发条件包括：自身几何体`SelfGeom` (UMjGeom*)、其他几何体`OtherGeom` (UMjGeom*) 和接触位置`ContactPos` (FVector)。
 
-**Blueprint:** Select the articulation reference → **Assign On Collision** → wire into your logic.
+**蓝图：** 选择关节参考 → **分配碰撞时事件(Assign On Collision)** → 连接到您的逻辑。
 
 **C++:**
 ```cpp
@@ -87,22 +87,22 @@ Robot->OnCollision.AddDynamic(this, &AMyActor::HandleCollision);
 
 void AMyActor::HandleCollision(UMjGeom* SelfGeom, UMjGeom* OtherGeom, FVector ContactPos)
 {
-    // Stop gripper, play effect, etc.
+    // 停止 gripper、播放效果等。
 }
 ```
 
 ---
 
-## Simulation Lifecycle
+## 仿真生命周期
 
-All on the manager:
+一切都归因于管理器
 
-| Node | What it does |
+| 节点 | 作用 |
 |------|-------------|
-| **Set Paused** (bool) | Pause/resume the physics thread |
-| **Reset Simulation** | Zero positions, velocities, time |
-| **Step Sync** (N) | Advance N steps synchronously (RL-style loops) |
-| **Get Sim Time** | Current simulation clock |
+| **Set Paused** (bool) | 暂停/恢复物理线程 |
+| **Reset Simulation** | 零位置、速度、时间 |
+| **Step Sync** (N) | 同步推进 N 步（强化学习式的循环） |
+| **Get Sim Time** | 当前模拟时钟 |
 
 **C++:**
 ```cpp
@@ -114,11 +114,11 @@ float Time = Manager->GetSimTime();
 
 ---
 
-## Snapshots
+## 快照
 
-Save and restore the full simulation state:
+保存并恢复完整的模拟状态：
 
-**Blueprint:** **Capture Snapshot** → store in a variable → **Restore Snapshot** later.
+**蓝图：** **捕获快照** → 存储在变量中 → 稍后**恢复快照**。
 
 **C++:**
 ```cpp
@@ -127,31 +127,31 @@ UMjSimulationState* Snap = Manager->CaptureSnapshot();
 Manager->RestoreSnapshot(Snap);
 ```
 
-Hold multiple snapshots for A/B testing, checkpointing, or undo.
+保存多个快照，用于 A/B 测试、检查点或撤销。
 
 ---
 
-## Keyframe API
+## 关键帧 API
 
-On `AMjArticulation`:
+在 `AMjArticulation`:
 
-| Node | What it does |
+| 节点 | 作用 |
 |------|-------------|
-| `ResetToKeyframe(Name)` | Teleports to a named keyframe (sets qpos/qvel/ctrl) |
-| `HoldKeyframe(Name)` | Continuously maintains a keyframe pose |
-| `StopHoldKeyframe()` | Releases the held keyframe |
-| `GetKeyframeNames()` | Returns names of all keyframes on this articulation |
-| `IsHoldingKeyframe()` | Returns true if currently holding a pose |
+| `ResetToKeyframe(Name)` | 传送至指定的关键帧（设置 qpos/qvel/ctrl） |
+| `HoldKeyframe(Name)` | 持续保持关键帧姿态 |
+| `StopHoldKeyframe()` | 释放已保持的关键帧 |
+| `GetKeyframeNames()` | 返回此关节上所有关键帧的名称 |
+| `IsHoldingKeyframe()` | 如果当前保持某个姿势，则返回 true |
 
-The MjSimulate widget provides a keyframe dropdown and Reset/Hold/Stop buttons for interactive use.
+MjSimulate 小部件提供关键帧下拉菜单和重置/保持/停止按钮，以便进行交互式使用。
 
 ---
 
-## Recording and Replay
+## 记录和回放
 
-With an `AMjReplayManager` in the level:
+在关卡中使用回放管理器`AMjReplayManager`
 
-**Blueprint:** **Start Recording** / **Stop Recording** / **Start Replay** / **Stop Replay** / **Save Recording to File** / **Load Recording from File**
+**蓝图：** **开始记录(Start Recording)** / **停止记录(Stop Recording)** / **开始回放(Start Replay)** / **停止回放(Stop Replay)** / **将记录内容保存到文件(Save Recording to File)** / **从文件加载记录内容(Load Recording from File)**
 
 **C++:**
 ```cpp
@@ -164,101 +164,102 @@ Replay->StartReplay();
 
 ---
 
-## Switching Control Source
+## 切换控制源
 
-Toggle between dashboard and external ZMQ control:
+在仪表盘和外部 ZMQ 控制之间切换：
 
-**Blueprint:** **Get Manager** → **Set Control Source** → `UI` or `ZMQ`
+**蓝图：** **获取管理器(Get Manager)** → **设置控制源(Set Control Source)** → `UI` 或者 `ZMQ`
 
 **C++:**
 ```cpp
 Manager->SetControlSource(EControlSource::ZMQ);
 ```
 
-Per-articulation override available on `AMjArticulation::ControlSource`.
+`AMjArticulation::ControlSource` 上提供了每个关节的覆盖设置。
 
 ---
 
 ## MjKeyframeController
 
-Cycles through named poses on an articulation with ease-in-out blending.
+在关节上循环切换已命名的姿势，并实现流畅的过渡效果。
 
-| Node | Description |
+| 节点 | 描述 |
 |------|-------------|
-| **LoadPreset** (name) | Load a built-in pose sequence |
-| **Play** / **Stop** | Start or pause playback |
-| **GoToKeyframe** (index) | Jump to a specific keyframe |
-| **GetPresetNames** | Returns all available preset names |
+| **LoadPreset** (名称) | 加载内置姿态序列 |
+| **Play** / **Stop** | 开始或暂停播放 |
+| **GoToKeyframe** (索引) | 跳转到特定关键帧 |
+| **GetPresetNames** | 返回所有可用的预设名称 |
 
-For full details on the keyframe controller, presets, and FMjKeyframePose struct, see [Controller Framework](controller_framework.md).
+有关关键帧控制器、预设和 FMjKeyframePose 结构体的完整详细信息，请参阅 [控制器框架](controller_framework.md) 。
 
 ---
 
 ## MjKeyframeCameraActor
 
-`AMjKeyframeCameraActor` is a cinematic camera that smoothly interpolates through a list of waypoints (`FMjCameraWaypoint`: Position, Rotation, Time). It uses a `UCineCameraComponent` and displays a spline preview of the path in the editor.
+`AMjKeyframeCameraActor` 是一款影视级相机，它能够平滑地通过一系列路径点（`FMjCameraWaypoint`：位置、旋转、时间）进行插值。它使用 `UCineCameraComponent`，并在编辑器中显示路径的样条曲线预览。
 
-**Key functions:**
+**主要功能：**
 
-| Node | Description |
+| 节点 | 描述 |
 |------|-------------|
-| **Play** | Start waypoint playback |
-| **Pause** | Freeze at current position |
-| **TogglePlayPause** | Toggle (also bound to **O** key) |
-| **Reset** | Return to first waypoint |
-| **CaptureCurrentView** | (Editor only) Snapshot the viewport camera as a new waypoint |
+| **Play** | 开始航点回放 |
+| **Pause** | 冻结在当前位置 |
+| **TogglePlayPause** | 切换（也绑定到**O**键） |
+| **Reset** | 返回第一个航点 |
+| **CaptureCurrentView** | （仅限编辑）将视口相机快照为新的航点 |
 
-**Properties:** `bAutoPlay`, `bAutoActivate` (sets as player view target), `bLoop`, `StartDelay`, `bSmoothInterp` (cubic vs linear).
+**属性：** `bAutoPlay`, `bAutoActivate` (设置为玩家视图目标), `bLoop`, `StartDelay`, `bSmoothInterp` (立方体 vs 线性).
 
 ---
 
 ## MjImpulseLauncher
 
-`AMjImpulseLauncher` applies a velocity-based impulse to an `MjBody`. Two modes:
+`AMjImpulseLauncher` 会对 `MjBody` 施加基于速度的脉冲。有两种模式：
 
-- **Direct** — launches along the actor's forward vector (or `DirectionOverride`).
-- **Targeted** — set `LaunchTarget` to an actor and it computes a ballistic arc toward it. `ArcHeight` controls the lob.
+- **直接**模式 — 沿 Actor 的前向向量（或 `DirectionOverride`）发射。 
+- **目标**模式 — 将 `LaunchTarget` 设置为某个动作者，它会计算指向该动作者的弹道弧线。`ArcHeight` 控制抛射高度。
 
-| Node | Description |
+| 节点 | 描述 |
 |------|-------------|
-| **FireImpulse** | Apply the impulse once |
-| **ResetAndFire** | Teleport projectile back to launcher position and fire (also bound to **F** key) |
+| **FireImpulse** | 施加一次脉冲 |
+| **ResetAndFire** | 将弹丸传送回发射器位置并发射（也绑定到 **F** 键） |
 
-**Properties:** `TargetActor`, `TargetBodyName` (optional, defaults to first MjBody), `LaunchSpeed` (m/s), `LaunchTarget`, `ArcHeight`, `bAutoFire`, `AutoFireDelay`.
+**属性：** `TargetActor`, `TargetBodyName` （可选，默认为第一个 MjBody）, `LaunchSpeed` (米/秒), `LaunchTarget`, `ArcHeight`, `bAutoFire`, `AutoFireDelay`。
 
 ---
 
-## Hotkeys
+## 快捷键
 
-Handled by `AAMjManager::Tick`. Active during PIE:
+由 `AAMjManager::Tick` 处理。在 PIE 期间处于活动状态：
 
-| Key | Action |
+| 键 | 动作 |
 |-----|--------|
-| **1** | Toggle debug contacts |
-| **2** | Toggle visual meshes |
-| **3** | Toggle articulation collision wireframes |
-| **4** | Toggle debug joints |
-| **5** | Toggle quick-convert collision wireframes |
-| **P** | Pause / resume simulation |
-| **R** | Reset simulation |
-| **O** | Toggle orbit camera orbit + keyframe camera play/pause |
-| **F** | Reset and fire all impulse launchers |
+| **1** | 切换调试联系人 |
+| **2** | 切换视觉网格 |
+| **3** | 切换关节碰撞线框 |
+| **4** | 切换调试关节 |
+| **5** | 切换快速转换碰撞线框 |
+| **P** | 暂停/恢复模拟 |
+| **R** | 重置模拟 |
+| **O** | 切换轨道相机轨道 + 关键帧相机播放/暂停 |
+| **F** | 重置并发射所有脉冲启动器 |
 
 ---
 
-## Per-Articulation Control Source
+## 每个关节的控制源
 
-Each `AMjArticulation` has a `ControlSource` field (`0` = ZMQ, `1` = UI) that overrides the manager-level `EControlSource` setting. This lets you run some robots from the dashboard sliders while others receive external ZMQ commands in the same scene.
+每个 `AMjArticulation` 都有一个 `ControlSource` 字段（`0` = ZMQ，`1` = UI），该字段会覆盖管理器级别的 `EControlSource` 设置。这样，您就可以在同一场景中通过控制面板滑块控制部分机器人，同时接收其他机器人的外部 ZMQ 命令。
 
-**Blueprint:** Set `ControlSource` on the articulation reference in Details or via Set node.
+**蓝图：** 在“详细信息(Details)”中或通过“设置(Set)”节点设置关节参考的`ControlSource`。 
 
 **C++:**
 ```cpp
-Robot->ControlSource = 1; // UI control for this robot
+Robot->ControlSource = 1; // 该机器人的用户界面控制
 ```
 
 ---
 
-## Advanced: Direct MuJoCo Access
+## 高级：直接访问 MuJoCo
 
-For users who need low-level access, every `UMjComponent` exposes **Get Mj ID** (compiled integer ID), **Get Mj Name** (prefixed name), and **Is Bound** (compilation status). Use these to index directly into `mjData` from C++. For most workflows, the API above is all you need.
+对于需要底层访问权限的用户，每个 `UMjComponent` 都公开了 **Get Mj ID**（编译后的整数 ID）、**Get Mj Name**（带前缀的名称）和 **Is Bound**（编译状态）三个方法。您可以使用这些方法直接从 C++ 访问 `mjData`。对于大多数工作流程，上述 API 已足够。
+

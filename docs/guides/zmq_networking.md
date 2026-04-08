@@ -1,28 +1,30 @@
-# ZMQ Networking & ROS 2
+# ZMQ 网络与 ROS 2
 
-Unreal Robotics Lab uses [ZeroMQ](https://zeromq.org) for all external communication. The design philosophy: keep the Unreal side fast, binary, and dependency-free — then let a separate bridge handle translation to whatever framework the user prefers.
 
----
+Unreal Robotics Lab 使用 [ZeroMQ](https://zeromq.org) 进行所有外部通信。其设计理念是：保持虚幻引擎端快速、二进制且无依赖——然后由一个独立的桥接器负责将其转换为用户偏好的任何框架。
 
-## Why ZMQ?
-
-- **Speed.** Binary PUB/SUB with no serialization overhead. The control loop runs at physics-thread frequency (typically 500–1000 Hz) without bottlenecking on message encoding.
-- **Minimal dependencies.** libzmq is the only networking dependency inside the plugin. No ROS, no middleware, no build system entanglement.
-- **User's choice.** The plugin does not mandate a robotics framework. ZMQ is the native transport; if you want ROS 2, the separate `urlab_bridge` handles the translation. If you want raw Python, just use `pyzmq`. If you want something else entirely, the binary format is straightforward to parse.
 
 ---
 
-## Plugin-Side Components
+## 为什么选择 ZMQ？
 
-Three components handle the networking, all auto-created on the `AAMjManager` at BeginPlay if none exist:
+- **速度快。** 采用二进制发布/订阅模式，无序列化开销。控制循环以物理线程频率（通常为 500–1000 Hz）运行，不会因消息编码而出现瓶颈。
+- **依赖项极少。** libzmq是插件内部唯一的网络依赖项。无需 ROS、中间件或构建系统集成。
+- **用户选择。** 该插件不强制要求使用机器人框架。ZMQ 是原生传输协议；如果您需要 ROS 2，则可以使用单独的 urlab_bridge 进行转换。如果您需要纯 Python 代码，只需使用 `pyzmq` 即可。如果您需要其他格式，二进制格式也很容易解析。
 
-| Component | Socket | Default Endpoint | Purpose |
+---
+
+## 插件端组件
+
+三个组件负责网络连接，如果 `AAMjManager` 在 BeginPlay 时不存在，则所有组件都会自动创建：
+
+| 组件 | 套接字 | 默认端点 | 目的 |
 |-----------|--------|-------------------|---------|
-| `UZmqSensorBroadcaster` | PUB | `tcp://*:5555` | Publishes sensor data, joint state, twist, actions |
-| `UZmqControlSubscriber` | SUB + PUB | `tcp://*:5556` (SUB), `tcp://*:5557` (info PUB) | Receives control vectors and gain updates; publishes actuator info JSON |
-| `UMjCamera` (ZMQ mode) | PUB | per-camera endpoint | Streams rendered camera frames on a dedicated thread (uses `SCS_FinalToneCurveHDR` capture source, so Post Process Volumes are respected) |
+| `UZmqSensorBroadcaster` | PUB | `tcp://*:5555` | 发布传感器数据、关节状态、扭转、动作 |
+| `UZmqControlSubscriber` | SUB + PUB | `tcp://*:5556` (SUB), `tcp://*:5557` (info PUB) | 接收控制向量和增益更新；发布执行器信息 JSON |
+| `UMjCamera` (ZMQ mode) | PUB | per-camera endpoint | 在专用线程上流式传输渲染的相机帧（使用 `SCS_FinalToneCurveHDR` 捕获源，因此会考虑后处理体积） |
 
-All Unreal-side sockets use `zmq_bind()`. External clients use `zmq_connect()`.
+所有虚幻引擎端的套接字都使用 `zmq_bind()` 函数。外部客户端使用 `zmq_connect()` 函数。
 
 ### Timing
 
