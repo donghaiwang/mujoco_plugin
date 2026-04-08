@@ -5,28 +5,67 @@ title: 主页
 欢迎使用 Mujoco 插件文档，该页面包含所有内容的索引。
 
 
-* [__简介__](#primary)  
-    * [引擎插件](#plugin)
-    
+* [__mujoco 插件实现__](#implementation)  
+    * [指南](#guide)
+* [__引擎插件开发__](#dev)  
 
 ---
 
-## 简介 <span id="introduction"></span>
+
+
+# mujoco 插件实现 <span id="implementation"></span>
+
+<!-- 更新至：https://github.com/URLab-Sim/UnrealRoboticsLab/commit/8f571e7f66eb06c65d390a47bc8211aa9bb64455 -->
+
+虚幻机器人实验室 (Unreal Robotics Lab, URLab) 虚幻引擎插件将 [MuJoCo](https://github.com/google-deepmind/mujoco) 物理引擎直接嵌入到编辑器和运行时中。
+
+该插件提供研究级的接触动力学功能，并兼容虚幻引擎的渲染、蓝图脚本和编辑器工具。您可以从 MJCF XML 文件导入机器人（或在组件层级结构中创建机器人），点击“运行”按钮，MuJoCo 会在专用线程上处理物理效果，而虚幻引擎则负责所有视觉效果。
+
+
+![](./img/hero.png)
+
+---
+
+## 指南  <span id="guide"></span>
+
+| 指南 | 涵盖的内容 |
+|-------|---------------|
+| [入门](getting_started.md) | 安装、首次模拟、控制方法 |
+| [特性](features.md) | 完整特性参考 |
+| [MJCF 导入](guides/mujoco_import.md) | 将 MuJoCo XML 模型导入虚幻引擎 |
+| [几何体与碰撞](guides/geometry_authoring.md) | 图元、网格几何体、快速转换、高度场 |
+| [控制器框架](guides/controller_framework.md) | PD、关键帧和自定义控制器 |
+| [持有和扭转控制](guides/possession_twist.md) | WASD控制，弹簧臂摄像头 |
+| [使用蓝图编写脚本](guides/blueprint_reference.md) | 快捷键、API 使用、脚本工作流程 |
+| [ZMQ 网络与 ROS 2](guides/zmq_networking.md) | ZMQ 传输、主题、摄像头流媒体 |
+| [URLab 桥接](guides/policy_bridge.md) | Python 中间件、强化学习策略、远程控制 |
+| [架构](architecture.md) | 子系统设计、线程模型、编译流程 |
+
+---
+
+## API 参考
+
+[API参考文档](api/index.md) 会在每次构建时根据 C++ 头文件自动生成。它涵盖了插件中的每个类、结构体和枚举。
 
 
 
 
-
-
-
-### 引擎插件 <span id="opensim"></span>
+# 引擎插件开发 <span id="dev"></span>
 
 [__引擎插件开发入门__](introduction.md) — 引擎插件开发的环境配置
 
 
 
+---
+
+## 第三方软件
+
+| 库 | 许可证 | 角色 |
+|---------|---------|------|
+| [MuJoCo](https://github.com/google-deepmind/mujoco) | Apache 2.0 | 物理模拟引擎 |
+| [CoACD](https://github.com/SarahWeiii/CoACD) | MIT | 凸近似分解(Convex approximate decomposition, CoACD) |
+| [libzmq](https://zeromq.org) | MPL 2.0 | 高性能消息传递 |
 
 
 
-
-如果对文档中的任何问题可以在 [本文档的源码仓库](https://github.com/OpenHUTB/locomotion) 中的 [问题](https://github.com/OpenHUTB/locomotion/issues) 页面讨论或者提交 [拉取请求](https://zhuanlan.zhihu.com/p/153381521) 直接修改文档。
+如果对文档中的任何问题可以在 [本文档的源码仓库](https://github.com/OpenHUTB/mujoco_plugin) 中的 [问题](https://github.com/OpenHUTB/mujoco_plugin/issues) 页面讨论或者提交 [拉取请求](https://zhuanlan.zhihu.com/p/153381521) 直接修改文档。

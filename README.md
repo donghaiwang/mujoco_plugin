@@ -14,6 +14,8 @@
 
 **具身人**：
 
+![](./docs/img/hero.png)
+
 ![Simulation Demo](./docs/img/humanoid100.gif)
 
 **摆锤**：
@@ -61,3 +63,4 @@
 * [mujoco-unreal-plugin](https://github.com/carTloyal123/mujoco-unreal-plugin)
 * [无人机模型](https://github.com/google-deepmind/mujoco_menagerie) - [Skydio X2](https://github.com/google-deepmind/mujoco_menagerie/tree/main/skydio_x2) 、[Crazyflie 2](https://github.com/google-deepmind/mujoco_menagerie/tree/main/bitcraze_crazyflie_2)
 * [Unity 的 Mujoco 插件](./docs/unity.md)
+* [UnrealRoboticsLab](https://github.com/URLab-Sim/UnrealRoboticsLab)
