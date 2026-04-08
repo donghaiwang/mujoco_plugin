@@ -1,12 +1,12 @@
-# Architecture
+# 架构
 
-## Overview
+## 概述
 
 UnrealRoboticsLab (URLab) integrates MuJoCo physics into Unreal Engine 5 as an editor plugin. `AAMjManager` is the top-level coordinator actor, but delegates core responsibilities to four `UActorComponent` subsystems: `UMjPhysicsEngine` (simulation), `UMjDebugVisualizer` (debug rendering), `UMjNetworkManager` (ZMQ discovery), and `UMjInputHandler` (hotkeys). The component system mirrors the MJCF element hierarchy -- each XML element type maps to a `UMjComponent` subclass attached to an `AMjArticulation` Blueprint. Physics runs on a dedicated async thread; the game thread reads results for rendering. ZMQ networking provides external control and sensor broadcasting.
 
 ---
 
-## Subsystem Architecture
+## 子系统架构
 
 `AAMjManager` delegates responsibilities to four `UActorComponent` subsystems, created via `CreateDefaultSubobject` in the constructor:
 
@@ -42,7 +42,7 @@ Owns `ZmqComponents` discovery and camera registration/streaming. `DiscoverZmqCo
 
 Processes hotkeys in `TickComponent`. Dispatches to `UMjPhysicsEngine` (pause/reset), `UMjDebugVisualizer` (debug toggles), and scene actors (mesh visibility, collision wireframes, cameras).
 
-### Communication Pattern
+### 通讯模式
 
 Subsystems communicate through:
 - **Callbacks:** `UMjPhysicsEngine` exposes `RegisterPreStepCallback`/`RegisterPostStepCallback`. Other subsystems register lambdas during BeginPlay.
@@ -51,9 +51,9 @@ Subsystems communicate through:
 
 ---
 
-## Module Initialization
+## 模块初始化
 
-**File:** `Source/URLab/Private/URLab.cpp` -- `FURLabModule::StartupModule()`
+**文件:** `Source/URLab/Private/URLab.cpp` -- `FURLabModule::StartupModule()`
 
 DLL load order (sequential, each must succeed):
 
@@ -69,7 +69,7 @@ In editor builds, the module also registers a "MuJoCo" asset category via `IAsse
 
 ---
 
-## Scene Lifecycle
+## 场景声明周期
 
 ### BeginPlay
 
@@ -103,7 +103,7 @@ Note: The discovery loop iterates all actors once. Quick Convert components and 
 
 ### Articulation Setup
 
-**File:** `Source/URLab/Private/MuJoCo/Core/MjArticulation.cpp` -- `AMjArticulation::Setup()`
+**文件:** `Source/URLab/Private/MuJoCo/Core/MjArticulation.cpp` -- `AMjArticulation::Setup()`
 
 This is the most complex part of spec construction. Each articulation creates an isolated child spec that is later merged into the root.
 
@@ -136,9 +136,9 @@ This is the most complex part of spec construction. Each articulation creates an
 
 Mesh preparation (CoACD convex decomposition via `PrepareMeshForMuJoCo`) happens during geom registration.
 
-### Compilation
+### 编译
 
-**File:** `UMjPhysicsEngine::Compile()`
+**文件** `UMjPhysicsEngine::Compile()`
 
 1. Calls `PreCompile()`.
 2. `mj_compile(m_spec, &m_vfs)` produces `mjModel*`.
@@ -149,9 +149,9 @@ Mesh preparation (CoACD convex decomposition via `PrepareMeshForMuJoCo`) happens
    - Calls `ApplyOptions()` (applies manager-level option overrides to `m_model->opt`).
    - Calls `PostCompile()`.
 
-### PostCompile (Binding)
+### 后编译 (绑定)
 
-**File:** `UMjPhysicsEngine::PostCompile()`
+**文件:** `UMjPhysicsEngine::PostCompile()`
 
 1. Calls `PostSetup(model, data)` on each `UMjQuickConvertComponent`.
 2. Builds `m_ArticulationMap` (name -> `AMjArticulation*`) for O(1) lookup.
@@ -171,9 +171,9 @@ PostSetup also populates component-name maps (`ActuatorComponentMap`, `JointComp
 
 ---
 
-## Physics Loop (Async Thread)
+## 物理循环 (异步线程)
 
-**File:** `Source/URLab/Private/MuJoCo/Core/MjPhysicsEngine.cpp` -- `UMjPhysicsEngine::RunMujocoAsync()`
+**文件:** `Source/URLab/Private/MuJoCo/Core/MjPhysicsEngine.cpp` -- `UMjPhysicsEngine::RunMujocoAsync()`
 
 Runs on a dedicated thread via `Async(EAsyncExecution::Thread, ...)`. Stored in `AsyncPhysicsFuture`.
 
@@ -194,9 +194,9 @@ Each iteration (under `CallbackMutex` lock, owned by `UMjPhysicsEngine`):
 
 ---
 
-## Game Thread (Tick)
+## 游戏线程 (节拍信号)
 
-**File:** `AAMjManager::Tick()`
+**文件:** `AAMjManager::Tick()`
 
 1. **Backward-compat pointer sync.** Copies `m_model`/`m_data` from `UMjPhysicsEngine` so legacy callers that read `AAMjManager::m_model` still work.
 2. Hotkey processing and debug drawing are delegated to `UMjInputHandler` and `UMjDebugVisualizer` respectively (both tick via their own `TickComponent`).
@@ -226,9 +226,9 @@ If debug is enabled, reads `DebugData` (protected by `DebugMutex` on the visuali
 
 ---
 
-## Thread Safety
+## 线程安全
 
-| Mutex / Mechanism | Owner | Protects | Used By |
+| Mutex / 机制 | 所有者 | 保护 | 使用者 |
 |---|---|---|---|
 | `CallbackMutex` (`FCriticalSection`) | `UMjPhysicsEngine` | `m_model`, `m_data` during physics stepping | Physics thread (main lock), `StepSync()` |
 | `DebugMutex` (`FCriticalSection`) | `UMjDebugVisualizer` | `DebugData` (contact visualization buffer) | Physics thread writes (via post-step callback), game thread reads (TickComponent) |
@@ -241,7 +241,7 @@ If debug is enabled, reads `DebugData` (protected by `DebugMutex` on the visuali
 
 ---
 
-## Component System
+## 组件系统
 
 ### Base: UMjComponent
 
@@ -249,7 +249,7 @@ If debug is enabled, reads `DebugData` (protected by `DebugMutex` on the visuali
 
 Inherits `USceneComponent` + `IMjSpecElement`. All MuJoCo element components derive from this.
 
-Key members:
+关键成员:
 
 - `m_SpecElement` (`mjsElement*`) -- set during `RegisterToSpec()`, used for ID resolution in `Bind()`.
 - `m_ID` (`int`) -- MuJoCo object ID, resolved during `Bind()`.
@@ -257,7 +257,7 @@ Key members:
 - `MjName` (`FString`) -- original MJCF name, stable for cross-referencing.
 - `bIsDefault` (`bool`) -- if true, this component is a default template, skipped by runtime discovery.
 
-Key methods:
+关键方法:
 
 - `RegisterToSpec(FMujocoSpecWrapper&, mjsBody*)` -- creates the spec element. Subclasses override.
 - `Bind(mjModel*, mjData*, Prefix)` -- resolves ID and caches model/data pointers.
@@ -272,7 +272,7 @@ Key methods:
 
 Lightweight structs that cache raw pointers into `mjModel`/`mjData` arrays for zero-overhead runtime access. Each has a `static constexpr mjtObj obj_type` for template dispatch.
 
-| Struct | obj_type | Key Pointers |
+| 结构体 | obj_type | Key Pointers |
 |---|---|---|
 | `BodyView` | `mjOBJ_BODY` | `xpos`, `xquat`, `xfrc_applied`, `mass`, `mocap_id` |
 | `GeomView` | `mjOBJ_GEOM` | `xpos`, `xmat`, `size`, `type`, `contype`, `conaffinity`, `dataid` |
@@ -286,13 +286,13 @@ Lightweight structs that cache raw pointers into `mjModel`/`mjData` arrays for z
 
 A standalone template function `bind<T>(model, data, name)` provides name-based lookup.
 
-### Default System
+### 默认系统
 
 `UMjDefault` components store template properties mirroring the MJCF `<default>` hierarchy. Parent-child class chain is built via `FMujocoSpecWrapper::AddDefault()`. During articulation setup, `ExportTo(mjsDefault*)` iterates child components and writes their properties to the spec default. At registration time, components resolve their default class via `ResolveDefault()` which calls `mjs_findDefault()`.
 
 ---
 
-## Coordinate System
+## 坐标系统
 
 MuJoCo uses right-handed Z-up coordinates in meters. Unreal uses left-handed Z-up in centimeters.
 
@@ -337,7 +337,7 @@ There are two ways to create an `AMjArticulation`:
 
 ---
 
-## Import Pipeline
+## 导入管线
 
 **Files:** `Source/URLabEditor/Private/MujocoImportFactory.cpp`, `Source/URLabEditor/Private/MjArticulationFactory.cpp`
 
