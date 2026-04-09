@@ -58,20 +58,18 @@ hooks:
 copyright: OpenHUTB 版权所有 &copy; {year}
 
 nav:
-- 首页: 'index.md'
-#- 入门: '#_1'
-#- 主题: '#_2'
-#- 交通: '#_3'
-#- 行人: "#_4"
-#- 高级概念: '#_5'
-#- 自定义地图: '#_6'
-#- 自定义开发: '#_7'
-#- 基准测试: "#_8"
-#- 生态系统: '#_9'
-#- 源代码编译: '#_10'
-#- 贡献: '#_11'
-#- 其他: '#_12'
-#- 参考: '#_13'
+- 入门: 'getting_started.md'
+- 特性: 'features.md'
+- MJCF 导入: 'guides/mujoco_import.md'
+- 几何体与碰撞: 'guides/geometry_authoring.md'
+- 控制器框架: 'guides/controller_framework.md'
+- 持有和扭转控制: 'guides/possession_twist.md'
+- 使用蓝图编写脚本: 'guides/blueprint_reference.md'
+- ZMQ 网络与 ROS 2: 'guides/zmq_networking.md'
+- URLab 桥接: 'guides/policy_bridge.md'
+- 架构: 'architecture.md'
+- 引擎插件开发入门: 'introduction.md'
+
 
 # - mdx_math 用于行内公式显示
 markdown_extensions:
