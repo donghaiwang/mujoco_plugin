@@ -1,5 +1,5 @@
 # 架构
-
+<!-- Articulation 铰链；Joint 关节 -->
 ## 概述
 
 UnrealRoboticsLab (URLab) 将 MuJoCo 物理引擎集成到虚幻引擎中，作为编辑器插件。`AAMjManager` 是顶层协调器参与者（Actor），但它将核心职责委托给四个 `UActorComponent` 子系统：`UMjPhysicsEngine`（物理模拟）、`UMjDebugVisualizer`（调试渲染）、`UMjNetworkManager`（ZMQ 发现）和 `UMjInputHandler`（热键）。组件系统与 MJCF 元素层级结构相对应——每个 XML 元素类型都映射到一个附加到 `AMjArticulation` 蓝图的 `UMjComponent` 子类。物理引擎运行在专用的异步线程中；游戏线程读取结果进行渲染。ZMQ 网络提供外部控制和传感器广播功能。
@@ -434,318 +434,337 @@ MuJoCo使用右手坐标系，Z 轴朝上，单位为米。而虚幻引擎使用
 9.通过 `FKismetEditorUtilities` 进行最终蓝图编译。
 
 
-### Import Normalization
+### 规范化导入
 
-The importer normalizes several MJCF constructs for consistency:
+为了保持一致性，导入器对多个 MJCF 构造进行了标准化处理：
 
-**FromTo resolution:** All `fromto` attributes on geoms and sites are decomposed at import time into explicit `pos`, `quat`, and `size`:
-- `pos` = midpoint of the fromto segment
-- `quat` = rotation aligning local +Z with the fromto direction
-- `size[1]` = half-length (for capsule/cylinder), `size[2]` for box/ellipsoid
-- `size[0]` (radius) left untouched — inherited from defaults
-- `bFromToResolvedHalfLength` flag set so ExportTo knows to only write the half-length slot
-- The component's relative transform is set for accurate editor visualization
+**FromTo分辨率：** 几何体和场景中的所有 `fromto` 属性在导入时都会被分解为明确的 `pos`（位置）、`quat`（四元数）和 `size`（尺寸）：
 
-**Default class visual transforms:** When a geom inherits a transform from a default class (e.g., `class="visual_zflip"` with `quat="0 0 0 1"`), the importer walks the default hierarchy to find the transform and applies it as a visual offset to the `UStaticMeshComponent` child — NOT to the `UMjGeom` component itself (which would double-apply via the spec default system).
+- `pos` =  fromto 线段的中点
+- `quat` = 将局部 + Z 轴与 fromto 方向对齐的旋转
+- `size[1]` = 半长（适用于胶囊/圆柱体），`size[2]` 适用于长方体/椭球体
+- `size[0]` （半径）保持不变 — 继承自默认值
+- 设置了 `bFromToResolvedHalfLength` 标志，以便ExportTo知道仅写入半长插槽
+- 组件的相对变换被设置为实现精确的编辑器可视化
 
-**Orientation handling:** All MJCF rotations (euler, axisangle, quat, xyaxes, zaxis) are converted to UE quaternions at import time using `MjOrientationUtils`. The `<compiler>` settings (angle="radian"/"degree", eulerseq) are respected.
+**默认视觉变换类：** 当几何体从默认类（例如，`class="visual_zflip"`且`quat="0 0 0 1"`）继承变换时，导入器会遍历默认层次结构以查找该变换，并将其作为视觉偏移量应用于`UStaticMeshComponent`子级，而非`UMjGeom`组件本身（否则会通过规范默认系统进行双重应用）。
 
-**Mesh name deduplication:** `MjSpecWrapper::GetUniqueName()` appends `_1`, `_2`, etc. if a mesh/body/geom name already exists in the spec.
+**朝向处理：** 所有 MJCF 旋转（欧拉角、轴角、四元数、xy轴、z轴）在导入时都会使用`MjOrientationUtils`转换为UE四元数。会遵循`<compiler>`设置（angle="radian"/"degree"，eulerseq）。
 
----
-
-## Export Pipeline (Runtime)
-
-Each component's `RegisterToSpec()` writes to an `mjsElement` via the `FMujocoSpecWrapper`. The component's `ExportTo()` method populates properties (type, size, pos, quat, friction, etc.).
-
-### Override Flag System
-
-Every exportable property has a corresponding `bOverride_*` bool. During `ExportTo()`:
-- If `bOverride_X == true`: the property is explicitly written to the spec element.
-- If `bOverride_X == false`: the property is NOT written, allowing MuJoCo's default system to provide the value.
-
-This is critical for round-trip fidelity: an imported geom with `class="collision"` that inherits `group=3` from its default should NOT have `group=3` written explicitly — that would bypass the default if the user later changes the default.
-
-### FromTo Export
-
-Geoms with `bFromToResolvedHalfLength == true`:
-- If `bIsDefault`: writes raw fromto to the default's geom (MuJoCo handles size resolution for defaults).
-- If instance with `bOverride_Size == false`: writes only the half-length slot, letting the default provide the radius.
-- If instance with `bOverride_Size == true`: writes all size slots explicitly.
-
-### Spec Attachment
-
-`mjs_attach()` merges the child spec into the root with the articulation's prefix, enabling multi-articulation scenes with unique namespaces. After attachment, all element names gain the prefix (e.g., `pelvis` becomes `g1_C_1_pelvis`). Runtime name lookups use this prefix.
+**网格名称去重：** 若规范中已存在某个网格/刚体/几何体的名称，`MjSpecWrapper::GetUniqueName()`方法会在该名称后添加`_1`、`_2`等后缀。
 
 ---
 
-## ZMQ Networking
+## 导出管线（运行时）
 
-**Files:** `Source/URLab/Private/MuJoCo/Net/ZmqSensorBroadcaster.cpp`, `ZmqControlSubscriber.cpp`
+每个组件的`RegisterToSpec()`方法都会通过`FMujocoSpecWrapper`写入一个`mjsElement`。组件的`ExportTo()`方法会填充属性（类型、大小、位置、四元数、摩擦力等）。
 
-Binary pub/sub protocol for minimal latency.
+### 覆盖标志系统
 
-**Topics:**
-- `{prefix}/joint/{name}` -- joint state
-- `{prefix}/sensor/{name}` -- sensor reading
-- `{prefix}/base_state/` -- root body pose
-- `{prefix}/twist` -- twist command velocity
-- `{prefix}/control` -- actuator control values
+每个可导出的属性都有一个对应的`bOverride_*`布尔值。在`ExportTo()`函数中：
 
-**Timing:**
-- Sensor broadcast: `PostStep()` on the physics thread.
-- Control receive: `PreStep()` on the physics thread.
+- 如果`bOverride_X == true`：则该属性将被显式写入 spec 元素。
+- 如果`bOverride_X == false`：则不写入属性，允许MuJoCo的默认系统提供值。 
 
-**Control source:** `EControlSource` enum (`ZMQ` or `UI`). Set globally on `AAMjManager::ControlSource`, with per-articulation override via `AMjArticulation::ControlSource`.
+这对于往返保真度至关重要：如果导入的 geom 具有`class="collision"`属性，并且该属性从其默认值继承了`group=3`，则不应明确写入`group=3`——因为如果用户之后更改了默认值，这将绕过默认值。
 
-**Info broadcast:** JSON payload with actuator names, IDs, and ranges. Sent periodically for client discovery.
+### FromTo 导出
 
----
+对于`bFromToResolvedHalfLength == true`的几何体：
 
-## Quick Convert
+- 如果`bIsDefault`为真：将原始 fromto 写入默认值的几何体（MuJoCo负责处理默认值的大小分辨率）。 
+- 如果实例中`bOverride_Size == false`：则仅写入半长槽，让默认值提供半径。
+- 如果实例中的`bOverride_Size == true`：则明确写入所有大小槽。
 
-**File:** `Source/URLab/Public/MuJoCo/Components/QuickConvert/MjQuickConvertComponent.h`
+### 规格附件
 
-`UMjQuickConvertComponent` attaches to any Static Mesh actor for one-click physics integration.
+`mjs_attach()` 函数将子规格与关节前缀合并到根中，从而支持具有唯一命名空间的多关节场景。附加后，所有元素名称都会加上前缀（例如，`pelvis` 变为 `g1_C_1_pelvis`。运行时名称查找会使用此前缀。
 
-- At `Setup()` time, creates an `MjBody` + `MjGeom` on the root world body.
-- Runs CoACD convex decomposition with configurable threshold.
-- Separates visual mesh (group 2) from collision mesh (group 3).
-- Supports static, dynamic, or mocap body modes.
 
 ---
 
-## Heightfield
+## ZMQ 网络
 
-**File:** `Source/URLab/Public/MuJoCo/Components/QuickConvert/AMjHeightfieldActor.h`
+**文件：** `Source/URLab/Private/MuJoCo/Net/ZmqSensorBroadcaster.cpp`, `ZmqControlSubscriber.cpp`
 
-`AMjHeightfieldActor` samples Unreal landscape geometry via raycasts.
+用于最小延迟的二进制发布/订阅协议。
 
-- Configurable resolution, trace channel, and actor whitelist.
-- `bTraceComplex` for accurate mesh sampling.
-- Registers as `mjsHField` + static geom on the world body.
-- Binary cache (`Saved/URLab/`) for fast recompilation.
+**话题：**
 
----
+- `{prefix}/joint/{name}` -- 关节状态
+- `{prefix}/sensor/{name}` -- 传感器读取
+- `{prefix}/base_state/` -- 根刚体的姿态
+- `{prefix}/twist` -- 扭转指令速度
+- `{prefix}/control` -- 执行器控制值
 
-## Replay System
+**时间：**
 
-**File:** `Source/URLab/Public/Replay/MjReplayManager.h`, `MjReplayTypes.h`
+- 传感器广播：在物理线程上执行 `PostStep()` 函数。
+- 控制接收：在物理线程上执行 `PreStep()`。
 
-- **Recording:** `OnPostStep` callback captures `qpos`/`qvel` per joint per frame.
-- **Playback:** `CustomStepHandler` replaces `mj_step()`, applies recorded `qpos` then calls `mj_forward()`.
-- **CSV import:** Supports external trajectory data with automatic joint name matching.
-- **Snapshot/Restore:** Full state capture via `mj_getState()` / `mj_setState()`. Game thread writes `PendingStateVector` then sets `bPendingRestore`; physics thread applies on next iteration.
-- **Thread safety:** Playback time is `std::atomic`. The `CustomStepHandler` runs inside `CallbackMutex`.
+**控制源：** `EControlSource` 枚举 (`ZMQ` 或 `UI`). 在`AAMjManager::ControlSource` 上全局设置，并通过`AMjArticulation::ControlSource`进行每个关节的覆盖设置。
 
----
-
-## Controller System
-
-**Files:** `Source/URLab/Public/MuJoCo/Components/Controllers/`
-
-- `UMjArticulationController` -- abstract base class. Override `ComputeAndApply()` to implement control logic.
-- `UMjPDController` -- PD servo controller with per-actuator Kp/Kv/torque limits.
-- `UMjPassthroughController` -- passes control values directly to `d->ctrl`.
-- `UMjKeyframeController` -- cycles through preset keyframe sequences with smooth interpolation.
-
-**Discovery:** During `PostSetup()`, the articulation calls `FindComponentByClass<UMjArticulationController>()`.
-
-**Bind:** Maps actuator IDs to `qpos`/`qvel` addresses via `FActuatorBinding` structs for efficient access.
-
-**ApplyControls:** `AMjArticulation::ApplyControls()` delegates to the controller's `ComputeAndApply()` if one is bound; otherwise falls back to writing actuator values directly to `d->ctrl`.
+**信息广播：** 包含执行器名称、ID 和范围的 JSON 有效负载。定期发送以进行客户端发现。 
 
 ---
 
-## Input System
+## 快速转换
 
-**Files:** `Source/URLab/Public/MuJoCo/Input/MjInputHandler.h`, `Source/URLab/Public/MuJoCo/Input/MjTwistController.h`, `Source/URLab/Public/MuJoCo/Net/MjInputMapping.h`
+**文件：** `Source/URLab/Public/MuJoCo/Components/QuickConvert/MjQuickConvertComponent.h`
+
+`UMjQuickConvertComponent` 可附加到任何静态网格（Static Mesh）参与者上，实现一键物理集成。
+
+- 在`Setup()`函数执行时，会在根世界物体上创建一个`MjBody` + `MjGeom`。 
+- 使用可配置阈值运行 CoACD 凸分解。
+- 将视觉网格（组 2）与碰撞网格（组 3）分开。
+- 支持静态、动态或运动捕捉刚体模式。
+
+---
+
+## 高度场
+
+**文件：** `Source/URLab/Public/MuJoCo/Components/QuickConvert/AMjHeightfieldActor.h`
+
+`AMjHeightfieldActor` 通过射线投射采样虚幻（Unreal）景观几何体。
+
+- 可配置的分辨率、跟踪通道和参与者白名单。
+- 使用 `bTraceComplex` 进行精确的网格采样。
+- 在世界刚体上注册为 `mjsHField` + 静态几何体。
+- 二进制缓存（已保存`Saved/URLab/`）用于快速重新编译。
+
+---
+
+## 重放系统
+
+**文件：** `Source/URLab/Public/Replay/MjReplayManager.h`, `MjReplayTypes.h`
+
+- **记录：** `OnPostStep` 回调函数捕获每帧每个关节的`qpos`/`qvel`。 
+- **回放：** `CustomStepHandler` 替换 `mj_step()`，应用记录的 `qpos`，然后调用 `mj_forward()`。
+- **CSV 导入：** 支持外部轨迹数据，并自动进行关节名称匹配。
+- **快照/恢复：** 通过 `mj_getState()` / `mj_setState()` 进行完整状态捕获。游戏线程写入 `bPendingRestore` ，然后设置 `bPendingRestore` ；物理线程在下一次迭代时应用。
+- **线程安全：** 播放时间是 `std::atomic`。`CustomStepHandler` 在 `CallbackMutex` 内部运行。
+
+---
+
+## 控制器系统
+
+**文件：** `Source/URLab/Public/MuJoCo/Components/Controllers/`
+
+- `UMjArticulationController` -- 抽象基类。重写 `ComputeAndApply()` 以实现控制逻辑。
+- `UMjPDController` -- 具有每个执行器 Kp/Kv/torque 限制的 PD 伺服控制器。
+- `UMjPassthroughController` -- 将控制值直接传递给 `d->ctrl`。
+- `UMjKeyframeController` -- 通过平滑插值循环播放预设的关键帧序列。
+
+**发现：** 在 `PostSetup()` 函数执行期间，关节系统调用了 `FindComponentByClass<UMjArticulationController>()` 函数。
+
+**绑定：** 通过 `FActuatorBinding` 结构体将执行器 ID 映射到 `qpos`/`qvel` 地址，以便高效访问。
+
+**ApplyControls:** 如果控制器已绑定，则 `AMjArticulation::ApplyControls()` 会委托给该控制器的 `ComputeAndApply()` 函数；否则，将直接将执行器值写入 `d->ctrl`。
+
+---
+
+## 输入系统
+
+**文件：** `Source/URLab/Public/MuJoCo/Input/MjInputHandler.h`, `Source/URLab/Public/MuJoCo/Input/MjTwistController.h`, `Source/URLab/Public/MuJoCo/Net/MjInputMapping.h`
 
 ### MjInputHandler
 
-`UMjInputHandler` is an `UActorComponent` subsystem on `AAMjManager`. It processes debug/simulation hotkeys in `TickComponent` and dispatches to the appropriate subsystem or scene actors. See "Game Thread (Tick)" above for the full key mapping. It accesses sibling subsystems via `GetOwner()->FindComponentByClass<T>()`.
+`UMjInputHandler` 是 `AAMjManager` 上的一个 `UActorComponent` 子系统。它处理 `TickComponent` 中的调试/模拟热键，并将其分发给相应的子系统或场景参与者。有关完整的键映射，请参阅上文的“游戏线程（Tick）”。它通过`GetOwner()->FindComponentByClass<T>()`访问同级子系统。
 
 ### MjTwistController
 
-Added automatically to articulations on Possess. Captures WASD/gamepad input and stores twist commands (`vx`, `vy`, `yaw_rate`) for broadcasting over ZMQ.
+已自动添加到 Possess 的关节表达中。捕捉 WASD/游戏手柄输入，并存储扭曲命令（`vx`、`vy`、`yaw_rate`），以便通过 ZMQ 进行广播。
 
-- Uses Unreal's Enhanced Input System (`UInputAction`, `UInputMappingContext`)
-- Input context added in `PossessedBy()`, removed in `UnPossessed()`
-- `GetTwist()` returns the current twist vector (thread-safe, read by ZMQ broadcaster on physics thread)
-- Supports 10 action keys (mapped to a bitmask) for discrete commands
-- `MaxVx`, `MaxVy`, `MaxYawRate` properties clamp the output
+- 使用虚幻引擎的增强输入系统（`UInputAction`、`UInputMappingContext`）
+- 在 `PossessedBy()` 中添加了输入上下文，在 `UnPossessed()` 中移除了输入上下文
+- `GetTwist()` 返回当前的扭转向量（线程安全，由物理线程上的 ZMQ 广播器读取）
+- 支持 10 个动作键（映射到位掩码），用于离散命令
+- `MaxVx`、`MaxVy`、`MaxYawRate`属性对输出进行限制
 
 ### MjInputMapping
 
-Configurable actuator-to-input binding system. Maps Enhanced Input actions directly to actuator SetControl calls. Each `FMjInputBinding` specifies:
-- Target actuator component
-- Input action reference
-- Scale multiplier
-- The binding fires `SetControl(value * scale)` on the Triggered event
+可配置的执行器到输入绑定系统。将增强输入动作直接映射到执行器的 SetControl 调用。每个 `FMjInputBinding` 都指定了：
+
+- 目标执行器组件
+- 输入动作参考
+- 缩放倍率
+- 绑定在触发事件上调用 `SetControl(value * scale)`
 
 ---
 
-## Simulation Options
+## 模拟选项
 
-**File:** `Source/URLab/Public/MuJoCo/Core/MjSimOptions.h`
+**文件：** `Source/URLab/Public/MuJoCo/Core/MjSimOptions.h`
 
-`FMuJoCoOptions` wraps MuJoCo's `mjOption` fields as UPROPERTYs (timestep, gravity, integrator, solver, iterations, etc.). Used in **two contexts with different semantics**:
+`FMuJoCoOptions` 将 MuJoCo 的 `mjOption` 字段封装为 UPROPERTY（时间步长、重力、积分器、求解器、迭代次数等）。在**两种具有不同语义的上下文**中使用：
 
-### On AMjArticulation (child spec options)
-- ALL fields are written to the child spec's `mjOption` before `mjs_attach()`
-- The `bOverride_*` toggles are **ignored** — every value applies unconditionally
-- This defines the "native" physics settings for that robot model
+### 关于 AMjArticulation（儿童专用选项）
+- 在调用`mjs_attach()`函数之前，所有字段都会被写入子规范的`mjOption`中
+- `bOverride_*` 开关**被忽略**——每个值都无条件应用
+- 这定义了该机器人模型的“原生”物理设置
 
-### On AAMjManager (post-compile overrides)
-- Acts as **post-compile overrides** on `m_model->opt` via `ApplyOptions()`
-- Only fields with `bOverride_* = true` are applied
-- Fields with `bOverride_* = false` keep whatever the compiled model has (from the articulation specs or MJCF defaults)
-- Called once after `mj_compile()` succeeds
+### 关于 AAMjManager（编译后覆盖）
+- 通过`ApplyOptions()`函数，作为`m_model->opt`的后编译覆盖
+- 仅应用`bOverride_* = true`的字段
+- `bOverride_* = false` 的字段将保留编译模型中的内容（来自关节规格或 MJCF 默认值）
+- 在`mj_compile()`成功后调用一次
 
-### Resolution order
-1. MuJoCo's built-in defaults (from `<option>` in XML or MuJoCo hardcoded defaults)
-2. Articulation's `SimOptions` overwrites the child spec options during Setup
-3. After compilation, Manager's `Options` selectively overwrites `m_model->opt` fields
+### 解析顺序
+1. MuJoCo 的内置默认设置（来源于XML中的`<option>`或 MuJoCo 的硬编码默认设置）
+2. 在设置过程中，Articulation 的 `SimOptions` 会覆盖子规格选项
+3. 编译后，Manager的`Options`会选择性地覆盖`m_model->opt`字段
 
-This means: an articulation can set `timestep = 0.002` in its SimOptions, and the manager can override it to `timestep = 0.005` if `bOverride_Timestep = true` on the manager.
-
----
-
-## Keyframes
-
-**File:** `Source/URLab/Public/MuJoCo/Components/Keyframes/MjKeyframe.h`
-
-`UMjKeyframe` components store named simulation state snapshots from the MJCF `<keyframe>` section:
-- `Time` -- simulation time
-- `Qpos` -- joint positions (array of doubles, size = nq)
-- `Qvel` -- joint velocities (array of doubles, size = nv)
-- `Act` -- actuator activations
-- `Ctrl` -- control values
-- `MocapPos` / `MocapQuat` -- mocap body transforms
-
-Registered to the spec during Setup (after bodies/joints). At runtime, `AMjArticulation::ResetToKeyframe()` teleports the robot to a named keyframe, and `HoldKeyframe()` continuously maintains the pose (via ctrl or direct qpos injection). The MjSimulate widget exposes these via a keyframe dropdown and Reset/Hold/Stop buttons.
+这意味着：一个关节可以在其 SimOptions 中将时间步长设置为 0.002 `timestep = 0.002`，如果管理器上的 `bOverride_Timestep = true`，则管理器可以将其覆盖为时间步长 `timestep = 0.005`。
 
 ---
 
-## Editor Tools
+## 关键帧 Keyframes
 
-- **MjSimulate widget** (`WBP_MjSimulate`): Physics options, per-actuator sliders, debug visualization toggles, replay controls, possess button. Auto-created at BeginPlay.
-- **ValidateSpec:** Blueprint compile hook on `AMjArticulation`. Creates a temporary spec, runs `mj_compile()`, and reports errors without affecting the running simulation.
-- **MjGeomDetailCustomization** (`Source/URLabEditor/`): Custom Details panel for geom properties in the editor.
+**文件：** `Source/URLab/Public/MuJoCo/Components/Keyframes/MjKeyframe.h`
+
+`UMjKeyframe` 组件存储来自 MJCF `<keyframe>` 部分的命名模拟状态快照：
+
+- `Time` -- 模拟时间
+- `Qpos` -- 关节位置（双精度数组，大小为 nq）
+- `Qvel` -- 关节速度（双精度数组，大小为 nv）
+- `Act` -- 执行器激活
+- `Ctrl` -- 控制值
+- `MocapPos` / `MocapQuat` -- 运动捕捉身体变换
+
+在设置过程中（在设置物体/关节之后）根据规范进行注册。在运行时，`AMjArticulation::ResetToKeyframe()` 会将机器人瞬移到指定的关键帧，而 `HoldKeyframe()` 则通过 ctrl 键或直接注入 qpos 来持续保持姿势。MjSimulate 窗口小部件通过关键帧下拉菜单和重置/保持/停止按钮来展示这些功能。
 
 ---
 
-## Editor Workflow
+## 编辑工具
 
-### Blueprint Compile Validation
+- **MjSimulate 控件** (`WBP_MjSimulate`): 物理选项、每个执行器的滑块、调试可视化切换、重播控制、控制按钮。在 BeginPlay 时自动创建。
+- **ValidateSpec:** `AMjArticulation` 上的蓝图编译挂钩。创建一个临时规范，运行 `mj_compile()` 函数，并在不影响正在运行的模拟的情况下报告错误。
+- **MjGeomDetailCustomization** (`Source/URLabEditor/`): 编辑器中几何体属性的自定义细节面板。
 
-When a user compiles an `AMjArticulation` Blueprint in the editor, `ValidateSpec()` runs automatically (hooked via `OnBlueprintCompiled`). This creates a temporary mjSpec, runs the full Setup() pipeline on it, and attempts `mj_compile()`. If compilation fails, a dialog shows the MuJoCo error message. This catches spec errors (missing joints, invalid ranges, etc.) at edit time rather than at Play.
+---
 
-### MjSimulate Widget
+## 编辑工作流
 
-Auto-created from `WBP_MjSimulate` Blueprint asset at BeginPlay. Provides:
-- Physics options: timestep, solver, integrator, iterations, sim speed
-- Per-actuator sliders (locked when control source is ZMQ)
-- Joint/sensor readouts
-- Articulation selector dropdown
-- Debug toggles (per-articulation and global)
-- Record/Replay/Snapshot controls
-- Possess button (attaches spring arm camera)
+### 蓝图编译验证
+
+当用户在编辑器中编译 `AMjArticulation` 蓝图时，`ValidateSpec()` 会自动运行（通过`OnBlueprintCompiled`挂钩）。这会创建一个临时的 mjSpec，对其运行完整的 Setup() 流程，并尝试执行 `mj_compile()`。如果编译失败，会弹出一个对话框显示MuJoCo错误消息。这样可以在编辑时捕捉到 spec 错误（如缺少关节、范围无效等），而不是在运行时才发现。
+
+### MjSimulate 控件
+
+
+在 BeginPlay 时从 `WBP_MjSimulate` 蓝图资源自动创建。提供：
+
+- 物理选项：时间步长、求解器、积分器、迭代次数、模拟速度
+- 每个执行器滑块（当控制源为 ZMQ 时锁定）
+- 关节/传感器读数
+- 关节选择器下拉菜单
+- 调试切换（针对每个关节和全局）
+- 记录/回放/快照控制
+- 持有(Possess)按钮（附有弹簧臂摄像头）
 
 ### MjGeomDetailCustomization
 
-Custom Details panel for `UMjGeom` components. Adds "Decompose Mesh" and "Remove Decomposition" buttons for CoACD operations directly in the editor.
+`UMjGeom` 组件的自定义细节面板。直接在编辑器中为 CoACD 操作添加“分解网格(Decompose Mesh)”和“移除分解(Remove Decomposition)”按钮。
 
 ---
 
-## Debug Visualization
+## 调试可视化
 
-**File:** `Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h`
+**文件：** `Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h`
 
-`UMjDebugVisualizer` is an `UActorComponent` subsystem on `AAMjManager`. It owns `DebugData` (`FMuJoCoDebugData`, defined in `MjDebugTypes.h`) and `DebugMutex`. Data capture runs on the physics thread via a registered post-step callback on `UMjPhysicsEngine`. Rendering runs on the game thread in `TickComponent`.
+`UMjDebugVisualizer` 是 `AAMjManager` 上的一个 `UActorComponent` 子系统。它拥有 `DebugData`（`FMuJoCoDebugData`，在 `MjDebugTypes.h` 中定义）和 DebugMutex。数据捕获通过在 `UMjPhysicsEngine` 上注册的后置步骤回调在物理线程上运行。渲染则在 `TickComponent` 中的游戏线程上运行。
 
-Hotkeys (processed by `UMjInputHandler::TickComponent()`, dispatched to `UMjDebugVisualizer`):
+热键（由 `UMjInputHandler::TickComponent()` 处理，并分派给 `UMjDebugVisualizer`）：
 
-| Key | Toggle |
-|---|---|
-| `1` | Contact force arrows |
-| `2` | Visual mesh visibility |
-| `3` | Articulation collision wireframes |
-| `4` | Joint axis/range arcs |
-| `5` | Quick Convert collision wireframes |
 
-Collision drawing logic: renders geoms in group 3 OR geoms where `contype != 0 && conaffinity != 0`.
+| 键  | 切换                                 |
+|----|------------------------------------|
+| `1` | 接触力箭头                              |
+| `2` | 视觉网格可见性                            |
+| `3` | 铰链碰撞线框                           |
+| `4` | 关节轴/范围弧              |
+| `5` | 快速转换碰撞线框 |
 
-Convex hull rendering uses `mesh_graph` data from MuJoCo (hull edges, not full mesh triangles).
+碰撞绘制逻辑：渲染组 3 中的几何体，或者渲染 `contype != 0 && conaffinity != 0`。
 
-Both per-articulation (`bDrawDebugCollision`, `bDrawDebugJoints`, `bDrawDebugSites`) and global toggles (`bGlobalDrawDebugCollision`, etc.) are supported.
+凸包渲染使用来自 MuJoCo 的 `mesh_graph` 数据（凸包边，而非完整的网格三角形）。
 
----
-
-## Cinematic Tools
-
-**Files:** `Source/URLab/Public/Cinematics/`
-
-- `AMjOrbitCameraActor` -- auto-orbiting camera that tracks detected robots. Toggled via `O` key.
-- `AMjKeyframeCameraActor` -- waypoint-based camera path with smooth interpolation. Play/pause toggled via `O` key.
+同时支持每个铰链的开关（如 `bDrawDebugCollision`、`bDrawDebugJoints`、`bDrawDebugSites`）和全局开关（如`bGlobalDrawDebugCollision`等）。
 
 ---
 
-## Error Handling and Failure Modes
+## 电影制作工具
 
-### Compile failure
-If `mj_compile()` returns null, `mjs_getError(m_spec)` retrieves the error string. In editor builds, a dialog box shows the message. The error is also stored in `m_LastCompileError` (accessible via Blueprint). The simulation does not start — `m_model` and `m_data` remain null, and `RunMujocoAsync` checks for this before stepping.
+**文件：** `Source/URLab/Public/Cinematics/`
 
-### Mesh import failure
-`ImportSingleMesh()` tries multiple paths: GLB (via Interchange), then raw OBJ/STL (via FBX factory), then FBX fallback. If all fail, the geom component is created but has no visual mesh — it still exists in the spec as a collision primitive. A warning is logged. The compile still succeeds since MuJoCo doesn't need visual meshes.
-
-### ZMQ connection failure
-ZMQ uses `bind()` not `connect()` — it listens on ports. If the port is already in use (e.g., previous PIE session didn't clean up), ZMQ will log an error but the simulation still runs. External clients simply can't connect. There is no retry logic — the user must restart PIE.
-
-### Python mesh preprocessing failure
-Every step of the auto-clean-meshes pipeline has a fallback:
-- Python not found → uses raw XML
-- trimesh not installed → attempts pip install, if that fails → uses raw XML
-- Script errors → uses raw XML
-- The import always proceeds; mesh preprocessing is best-effort
-
-### ValidateSpec failure
-Shows a dialog with the MuJoCo error. Does NOT prevent the Blueprint from being saved — it's informational. The user can fix the issue and recompile.
+- `AMjOrbitCameraActor` -- 自动环绕摄像头，可追踪检测到的机器人。通过 `O` 键切换。
+- `AMjKeyframeCameraActor` -- 基于航点的相机路径，具有平滑插值功能。通过 `O` 键切换播放/暂停。 
 
 ---
 
-## Debug XML (Diagnostics)
+## 错误处理与故障模式
 
-When `bSaveDebugXml = true` on the AAMjManager, after successful compilation the system saves:
-- `Saved/URLab/scene_compiled.xml` — the full MuJoCo spec as XML
-- `Saved/URLab/scene_compiled.mjb` — the compiled binary model
+### 编译失败
+如果 `mj_compile()` 返回null，则 `mjs_getError(m_spec)` 会检索错误字符串。在编辑器构建中，会弹出一个对话框显示该消息。错误也会存储在 `m_LastCompileError` 中（可通过蓝图访问）。模拟不会启动——`m_model`和`m_data`仍为null，`RunMujocoAsync` 会在执行步骤前检查这一点。
 
-The XML undergoes path relativization: absolute paths like `C:/Users/.../Saved/URLab/ConvertedMeshes/...` are stripped to `ConvertedMeshes/...` relative to the output directory. Double slashes and `../` traversals are cleaned.
+### 网格导入失败
 
-**Diagnostic use:** Diff the original MJCF XML against `scene_compiled.xml` to identify import/export mismatches. Missing elements, wrong property values, or broken default inheritance will be visible in the diff. The compiled XML can also be loaded directly into native MuJoCo (`mj_loadXML`) to verify it produces the same behavior.
+`ImportSingleMesh()` 尝试了多种路径：首先通过 Interchange 导入 GLB 格式，然后通过 FBX factory 导入原始 OBJ/STL 格式，最后是 FBX 回退路径。如果所有尝试都失败，则会创建几何体组件，但该组件没有可视网格——它仍然作为碰撞图元存在于规范中。系统会记录一条警告。由于 MuJoCo 不需要可视网格，因此编译仍然会成功。
+
+
+### ZMQ 连接失败
+
+ZMQ使用 `bind()` 而非 `connect()` ——它在端口上进行监听。如果端口已被占用（例如，之前的 PIE 会话未清理），ZMQ 会记录错误，但模拟仍会运行。外部客户端无法连接。没有重试逻辑——用户必须重启 PIE。
+
+### Python网格预处理失败
+
+自动清理网格流程的每一步都有备用方案：
+
+- 未找到Python → 使用原始XML
+- 未安装 trimesh → 尝试使用 pip 安装，如果失败 → 使用原始 XML
+- 脚本错误 → 使用原始XML
+- 导入总是会继续进行；网格预处理则是尽力而为
+
+### ValidateSpec 失败
+
+显示一个包含 MuJoCo 错误的对话框。该对话框不会阻止蓝图保存，仅提供信息性提示。用户可以修复问题并重新编译。
+
+
+---
+
+## 调试XML（诊断）
+
+当 AAMjManager 上`bSaveDebugXml = true`时，编译成功后，系统会保存：
+
+- `Saved/URLab/scene_compiled.xml` — 以 XML 格式保存的完整 MuJoCo 规范
+- `Saved/URLab/scene_compiled.mjb` — 编译后的二进制模型
+
+XML文件会进行路径相对化处理：像`C:/Users/.../Saved/URLab/ConvertedMeshes/...`这样的绝对路径会被剥离，变为相对于输出目录的`ConvertedMeshes/...`。双斜杠和`../`遍历路径会被清除。
+
+**诊断用途:** 将原始的 MJCF XML与 `scene_compiled.xml` 进行差异比较，以识别导入/导出不匹配的问题。差异比较中会显示缺失的元素、错误的属性值或损坏的默认继承。编译后的 XML 也可以直接加载到原生MuJoCo（`mj_loadXML`）中，以验证其是否产生相同的行为。
 
 ---
 
 ## Key File Reference
 
-| Path | Purpose |
-|---|---|
-| `Source/URLab/Private/URLab.cpp` | Module startup, DLL loading |
-| `Source/URLab/Public/MuJoCo/Core/AMjManager.h` | Manager actor header (thin coordinator) |
-| `Source/URLab/Private/MuJoCo/Core/AMjManager.cpp` | Manager lifecycle, subsystem wiring |
-| `Source/URLab/Public/MuJoCo/Core/MjPhysicsEngine.h` | Physics engine subsystem (spec, model, data, async loop) |
-| `Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h` | Debug visualization subsystem |
-| `Source/URLab/Public/MuJoCo/Core/MjDebugTypes.h` | `FMuJoCoDebugData` shared struct |
-| `Source/URLab/Public/MuJoCo/Net/MjNetworkManager.h` | Network/ZMQ discovery subsystem |
-| `Source/URLab/Public/MuJoCo/Input/MjInputHandler.h` | Input/hotkey subsystem |
-| `Source/URLab/Public/MuJoCo/Core/MjArticulation.h` | Articulation actor header |
-| `Source/URLab/Private/MuJoCo/Core/MjArticulation.cpp` | Articulation setup, attach |
-| `Source/URLab/Public/MuJoCo/Components/MjComponent.h` | Base component, BindToView |
-| `Source/URLab/Public/MuJoCo/Utils/MjBind.h` | View structs (BodyView, GeomView, etc.) |
-| `Source/URLab/Public/MuJoCo/Utils/MjUtils.h` | Coordinate conversions |
-| `Source/URLab/Public/MuJoCo/Core/Spec/MjSpecWrapper.h` | Spec element creation wrapper |
-| `Source/URLab/Public/MuJoCo/Components/Defaults/MjDefault.h` | Default system |
-| `Source/URLabEditor/Private/MujocoImportFactory.cpp` | MJCF import pipeline |
-| `Source/URLabEditor/Private/MjArticulationFactory.cpp` | Blueprint generation |
-| `Source/URLab/Public/Replay/MjReplayTypes.h` | Replay data structures |
-| `Source/URLab/Public/MuJoCo/Net/MjZmqComponent.h` | ZMQ base component |
+| 路径                                                           | 目的                       |
+|--------------------------------------------------------------|--------------------------|
+| `Source/URLab/Private/URLab.cpp`                             | 模块启动，加载动态链接库（DLL）        |
+| `Source/URLab/Public/MuJoCo/Core/AMjManager.h`               | 管理者参与者（轻量级协调器）           |
+| `Source/URLab/Private/MuJoCo/Core/AMjManager.cpp`            | 管理器生命周期，子系统连接            |
+| `Source/URLab/Public/MuJoCo/Core/MjPhysicsEngine.h`          | 物理引擎子系统（规范、模型、数据、异步循环）   |
+| `Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h`        | 调试可视化子系统                 |
+| `Source/URLab/Public/MuJoCo/Core/MjDebugTypes.h`             | `FMuJoCoDebugData` 共享结构体 |
+| `Source/URLab/Public/MuJoCo/Net/MjNetworkManager.h`          | 网络/ZMQ发现子系统              |
+| `Source/URLab/Public/MuJoCo/Input/MjInputHandler.h`          | 输入/热键子系统                 |
+| `Source/URLab/Public/MuJoCo/Core/MjArticulation.h`           | 铰链参与者头                   |
+| `Source/URLab/Private/MuJoCo/Core/MjArticulation.cpp`        | 铰链设置，连接                  |
+| `Source/URLab/Public/MuJoCo/Components/MjComponent.h`        | 基础组件，BindToView          |
+| `Source/URLab/Public/MuJoCo/Utils/MjBind.h`                  | 视图结构（BodyView、GeomView等） |
+| `Source/URLab/Public/MuJoCo/Utils/MjUtils.h`                 | 坐标转换                     |
+| `Source/URLab/Public/MuJoCo/Core/Spec/MjSpecWrapper.h`       | 规范元素创建封装器                |
+| `Source/URLab/Public/MuJoCo/Components/Defaults/MjDefault.h` | 默认系统                     |
+| `Source/URLabEditor/Private/MujocoImportFactory.cpp`         | MJCF 导入管线                |
+| `Source/URLabEditor/Private/MjArticulationFactory.cpp`       | 蓝图生成                     |
+| `Source/URLab/Public/Replay/MjReplayTypes.h`                 | 重放数据结构                   |
+| `Source/URLab/Public/MuJoCo/Net/MjZmqComponent.h`            | ZMQ 基础组件   |
