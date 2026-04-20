@@ -101,6 +101,17 @@ python Scripts/clean_meshes.py path/to/robot.xml
 
 这将生成一个包含更新后的网格引用的 `_ue.xml` 文件，您可以将其拖入 Unreal 中，而不是使用原始 XML 文件。
 
+
+**手动安装软件包：** 如果您不想使用对话框，而是希望自行安装软件包，请使用您首选的 Python 解释器运行以下命令：
+
+```bash
+/path/to/your/python -m pip install trimesh numpy scipy
+```
+
+Then make sure the same Python path is set in `Config/LocalUnrealRoboticsLab.ini` (see below). The plugin will detect the packages on next import and skip the install prompt.
+
+
+
 **更改 Python 解释器：** 插件会将您的 Python 路径存储在插件目录下的 `Config/LocalUnrealRoboticsLab.ini` 文件中。该文件已被 .gitignore 忽略（每台机器单独设置）。要切换解释器，您可以删除该文件（下次导入时对话框将重新出现），或者直接编辑该文件： 
 
 ```ini
