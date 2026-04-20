@@ -2,17 +2,19 @@
 
 ## 先决条件
 
-- 虚幻引擎 5.4+
-- Windows 10/11
+- **虚幻引擎 5.7+：** C++插件代码和第三方库应该可以在早期的 UE5 版本上编译，但内置的`.uasset`文件（UI组件、材质、输入映射）是在5.7版本中序列化的，因此不向下兼容。核心模拟功能在旧版本上仍然可以运行，但仪表盘UI和一些编辑器功能将会缺失。如果确实需要支持旧版本，我们可以考虑提供兼容的资源。
+- **Windows 10/11：**Linux 还在实验阶段。
+- **MuJoCo 3.7+：**集成在 `third_party/` 目录中（从源代码构建）。
 - **C++ 工程:** 此插件包含源代码，无法在仅使用蓝图的项目中使用。
-- **Visual Studio 2022 / 2025** (带有 "Game development with C++" 工作负载)。
+- **Visual Studio 2022** (带有 "Game development with C++" 工作负载)。
 - Python 3.11+ (可选，用于外部策略控制)
+- **[uv](https://github.com/astral-sh/uv)** -- 可选，用于 Python 依赖管理
 
 ## 安装
 
  **⚠️ 重要提示：** 这是一个 C++ 插件。您**必须**使用 C++ 项目。如果您的项目仅包含蓝图，请在开始之前通过*Tools > New C++ Class*添加一个空的 C++ 类。
 
-1. 将代码库克隆到你的虚幻引擎项目 `Plugins/` 目录中：
+1. 将插件仓库克隆到你的虚幻引擎项目 `Plugins/` 目录中：
    ```bash
    cd "YourProject/Plugins"
    git clone https://github.com/URLab-Sim/UnrealRoboticsLab.git
@@ -33,8 +35,15 @@
 
 5. **显示资产：** 在虚幻内容浏览器中，点击 **设置(Settings)**（齿轮图标）并勾选 **显示插件内容(Show Plugin Content)**。此操作是查看用户界面组件和插件资源所必需的。
 
-6. **（可选）Python 桥接：** 为外部控制设置桥接：
+6. **(可选) C++ 集成：** 如果您想在自己的 C++ 代码中直接使用 URLab 类型（例如，`#include "MuJoCo/Core/AMjManager.h"`, 强制转换为 `AMjArticulation*`），请将 `"URLab"` 添加到项目的 `.Build.cs` 文件中：
+   ```csharp
+   PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "URLab" });
+   ```
+   如果您仅通过编辑器、蓝图或 ZMQ 使用插件，则**无需执行此操作**。
+
+7. **（可选）Python 桥接：** 配套的 [urlab_bridge](https://github.com/URLab-Sim/urlab_bridge) 软件包提供用于外部控制、强化学习策略部署和 ROS 2 桥接的 Python 中间件。请参阅其 README 文件以获取设置说明。：
    ```bash
+   # 已移到 urlab_bridge 仓库
    cd UnrealRoboticsLab/urlab_bridge
    pip install uv
    uv sync
@@ -118,10 +127,28 @@ TArray<float> Force = MyArticulation->GetSensorReading("wrist_force");
 
 ### UI：“模拟”仪表盘未显示
 UI 与上下文相关，需要满足特定条件：
+
 * 确保关卡中存在 `MjManager` 参与者。
 * 在 `MjManager` 设置中，确认 `bAutoCreateSimulateWidget` 已启用。 
 * 确保您已按照安装指南中的 **"显示资产(Show Assets)"** 步骤操作，以使引擎能够访问 UI 小部件。
 
+
+### 旧版UE：内容资源无法加载
+
+捆绑的 `.uasset` 文件（UI 组件、材质、输入映射）是用 UE 5.7 保存的，无法在早期版本中加载。C++ 插件代码可以编译，核心仿真也能运行，但仪表盘 UI 和一些编辑器功能会缺失。
+
+我们强烈建议您升级到 UE 5.7，因为这是我们唯一测试和支持的版本。如果无法升级，并且您同时安装了 UE 5.7 和旧版本，您可以通过复制粘贴的方式重新创建资源：
+
+1. 在 **UE 5.7** 中打开插件项目，并打开您需要的控件/材质/输入资产。
+2. 在编辑器图表中选择所有节点（Ctrl+A），然后复制（Ctrl+C）。
+3. 在**旧版本的 UE** 中，创建一个相同类型的新资源（例如，一个父级为 `MjSimulateWidget` 的控件蓝图）。
+4. 粘贴（Ctrl+V）——节点和层级结构将跨版本迁移。
+5. 保存新资源。现在它与您的引擎版本兼容了。 
+
+此方法适用于 UMG 控件蓝图、材质图表和输入映射资产。
+
+
 ### 仿真：机器人处于静态状态
+
 * **控制源：**检查 `MjManager` 或 `MjArticulation` 的**控制源**是否设置为 **UI**。如果设置为 **ZMQ**，则 UI 滑块将被忽略。
 * **物理状态：** 确保 `MjManager` 未暂停，并且机器人组件设置中未将其设置为`静态(Static)`。 
