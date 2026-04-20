@@ -34,62 +34,64 @@ uv pip install -e ./RoboJuDo     # 策略框架 (内置的子模块)
 ## 快速开始
 
 ```bash
-# 启动仪表盘 (关节/传感器/相机 viewer, actuator control, optional policy runner)
+# 启动仪表盘 (关节/传感器/相机查看器、执行器控制、可选策略运行器)
 uv run src/run.py --ui
 
-# Run a specific policy headless
+# 以无头模式（不打开图形界面）运行特定策略
 uv run src/run.py --policy unitree_12dof --prefix g1
 
-# Test ZMQ connection
+# 测试 ZMQ 连接
 uv run src/run.py --test --prefix g1
 
 ```
 
-## Available Policies
+## 可用策略
 
-| Key                | Robot   | DOF | Description                              | Requires PHC |
+| 关键字                | 机器人   | 自由度（Degrees of Freedom, DOF） | 描述                              | 需要永久人形控制（Perpetual Humanoid Control , PHC） |
 |--------------------|---------|-----|------------------------------------------|:------------:|
-| `unitree_12dof`    | G1      | 12  | Basic walking -- WASD twist control      |              |
-| `unitree_wo_gait`  | G1      | 29  | Full body walking without gait clock     |              |
-| `smooth`           | G1      | 29  | Smoother walking policy                  |              |
-| `beyondmimic_dance`| G1      | 29  | Motion imitation -- dance                |      Y       |
-| `h2h`             | G1      | 21  | Human motion retargeting                 |      Y       |
-| `amo`             | G1      | 29  | Adaptive motion optimization             |      Y       |
-| `twist_tracker`   | G1      | 12  | Motion tracker with twist                |      Y       |
-| `go2_wtw`         | Go2     | 12  | Walk-These-Ways rough-terrain locomotion |              |
+| `unitree_12dof`    | G1      | 12  | 基本行走——WASD 扭转控制      |              |
+| `unitree_wo_gait`  | G1      | 29  | 无需步态时钟即可进行全身行走     |              |
+| `smooth`           | G1      | 29  | 更平稳的步行策略                  |              |
+| `beyondmimic_dance`| G1      | 29  | 动作模仿——舞蹈                |      Y       |
+| `h2h`             | G1      | 21  | 人体运动重定向                 |      Y       |
+| `amo`             | G1      | 29  | 自适应运动优化             |      Y       |
+| `twist_tracker`   | G1      | 12  | 带扭动功能的运动追踪器                |      Y       |
+| `go2_wtw`         | Go2     | 12  | 沿着这些路行走的崎岖地形 |              |
 
-Policies marked **PHC** require the [PHC submodule](https://github.com/ZhengyiLuo/PHC) installed inside RoboJuDo.
+标记为 **PHC** 的策略需要 RoboJuDo 内部安装 [PHC 子模块](https://github.com/ZhengyiLuo/PHC)。
 
-## ZMQ Protocol
 
-URLab publishes binary-packed data over ZeroMQ PUB/SUB sockets. All topics are prefixed with the articulation name (e.g. `g1/`).
+## ZMQ 协议
 
-| Topic Pattern          | Direction       | Payload Format               |
+URLab 通过 ZeroMQ PUB/SUB 套接字发布二进制打包的数据。所有主题都以划分名称为前缀（例如 `g1/`）。
+
+
+| 主题模式          | 方向       | 有效载荷格式               |
 |------------------------|-----------------|------------------------------|
 | `{prefix}/joint/{id}`  | Unreal -> Python | `<Ifff` (ID, pos, vel, acc) |
 | `{prefix}/sensor/{name}` | Unreal -> Python | `<I` ID + `<I` dim + `f`*N floats |
 | `{prefix}/camera/{name}` | Unreal -> Python | Raw BGRA bytes (dedicated socket) |
 | `{prefix}/control`     | Python -> Unreal | `<I` count + (`<If`)*N (ID, value) pairs |
 
-- **State socket** (default `tcp://127.0.0.1:5555`): joints + sensors at up to 1000 Hz.
-- **Control socket** (default `tcp://127.0.0.1:5556`): policy sends target positions.
-- **Camera socket** (default `tcp://127.0.0.1:5558`): high-bandwidth image stream on a separate socket.
+- **状态套接字**（默认 `tcp://127.0.0.1:5555`）：关节和传感器数据，最高采样率达 1000 Hz。
+- **控制套接字**（默认 `tcp://127.0.0.1:5556`）：策略发送目标位置。
+- **相机套接字**（默认 `tcp://127.0.0.1:5558`）：通过单独的套接字传输高带宽图像流。
 
-## ROS 2 Bridge
+## ROS 2 桥接
 
-`ros2_broadcaster.py` republishes ZMQ streams as standard ROS 2 topics (JointState, Image, Float64MultiArray). Requires a sourced ROS 2 workspace (Humble/Jazzy).
+`ros2_broadcaster.py` 将 ZMQ 流重新发布为标准的 ROS 2 主题（JointState、Image、Float64MultiArray）。需要已加载的 ROS 2 工作空间（Humble/Jazzy）。
 
 ```bash
 source /opt/ros/humble/setup.bash
 uv run src/ros2_broadcaster.py
 ```
 
-## License
+## 许可证
 
 Apache 2.0 -- see [LICENSE](LICENSE).
 
 Copyright 2026 Jonathan Embley-Riches.
 
-## Related
+## 相关软件包
 
-This package is the Python companion to [Unreal Robotics Lab](https://github.com/URLab-Sim/UnrealRoboticsLab), an Unreal Engine plugin embedding MuJoCo physics for sim-to-real robotics research.
+该软件包是 [Unreal Robotics Lab](https://github.com/URLab-Sim/UnrealRoboticsLab) 的 Python 配套软件包，Unreal Robotics Lab 是一个 Unreal Engine 插件，嵌入了 MuJoCo 物理引擎，用于模拟到现实的机器人研究。
