@@ -4,23 +4,36 @@
 
 - 虚幻引擎 5.4+
 - Windows 10/11
+- **C++ 工程:** 此插件包含源代码，无法在仅使用蓝图的项目中使用。
+- **Visual Studio 2022 / 2025** (带有 "Game development with C++" 工作负载)。
 - Python 3.11+ (可选，用于外部策略控制)
 
 ## 安装
+
+ **⚠️ 重要提示：** 这是一个 C++ 插件。您**必须**使用 C++ 项目。如果您的项目仅包含蓝图，请在开始之前通过*Tools > New C++ Class*添加一个空的 C++ 类。
 
 1. 将代码库克隆到你的虚幻引擎项目 `Plugins/` 目录中：
    ```bash
    cd "YourProject/Plugins"
    git clone https://github.com/URLab-Sim/UnrealRoboticsLab.git
    ```
-2. 构建第三方依赖项（一次）：
+2. 构建第三方依赖项（一次）。在启动引擎之前，您必须先获取并安装 MuJoCo 所需的依赖项。请打开 **PowerShell**，然后运行以下命令：
    ```bash
    cd UnrealRoboticsLab/third_party
-   # 运行 third_party/build_all.ps1
+   .\build_all.ps1
    ```
    Windows 的预编译二进制文件包含在 `third_party/install/`（MuJoCo、libzmq、CoACD）中。
-3. 在虚幻引擎中打开你的 `.uproject` 文件 -- 插件会自动加载。
-4. （可选）设置用于外部控制的 Python 桥接：
+   *(如果您在此处遇到编译器栈溢出错误，请参阅下面的 [故障排除](#troubleshooting) 部分。*
+3. **注册该模块：** 打开您的主机项目的 `.Build.cs` 文件（例如，`Source/YourProject/YourProject.Build.cs`），并将`"UnrealRoboticsLab"`添加到您的`PublicDependencyModuleNames`中：
+   ```csharp
+   PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UnrealRoboticsLab" });
+   ```
+
+4. **编译：** 右键点击您的`.uproject`文件，选择**Generate Visual Studio project files**，然后打开解决方案并在您的集成开发环境中**构建**您的项目。
+
+5. **显示资产：** 在虚幻内容浏览器中，点击 **设置(Settings)**（齿轮图标）并勾选 **显示插件内容(Show Plugin Content)**。此操作是查看用户界面组件和插件资源所必需的。
+
+6. **（可选）Python 桥接：** 为外部控制设置桥接：
    ```bash
    cd UnrealRoboticsLab/urlab_bridge
    pip install uv
@@ -53,8 +66,8 @@
 
 ### 从仪表盘
 
-- 使用 MjSimulate 小部件中的执行器滑块来移动关节。
-- 将控制源设置为 UI（在管理器上或每关节），以使用仪表板滑块而不是 ZMQ。 
+* 使用 MjSimulate 小部件中的执行器滑块来移动关节。
+* 将控制源设置为 UI（在管理器上或每关节），以使用仪表板滑块而不是 ZMQ。 
 
 ### 来自 Python (ZMQ)
 
@@ -86,9 +99,29 @@ TArray<float> Force = MyArticulation->GetSensorReading("wrist_force");
 
 ## 后续步骤
 
-- [features.md](features.md) -- 完整功能参考
+- [特性](features.md) -- 完整功能参考
 - [MJCF 导入](guides/mujoco_import.md) -- 导入管道详情
 - [蓝图参考](guides/blueprint_reference.md) -- 所有蓝图可调用函数和快捷键
 - [ZMQ 网络](guides/zmq_networking.md) -- 协议、主题和 Python 示例
 - [策略桥接](guides/policy_bridge.md) -- 强化学习策略部署
 - [开发者工具](guides/developer_tools.md) -- 模式跟踪、 XML 调试、构建/测试技能
+
+
+## 故障排除
+
+### 构建错误：MSVC 栈溢出（错误代码：0xC00000FD）
+如果 `build_all.ps1` 脚本因错误代码 `-1073741571` 而失败，这表明您的编译器在处理 MuJoCo 复杂的传感器模板时已耗尽了内部内存。
+
+* **解决方法：** 将 Visual Studio 更新至最新版本（**VS 2022 (17.10+)** 或以上版本）或 **VS 2025**（这是 MuJoCo CI 的参考版本）。
+* **应变方法：** 通过运行以下命令强制设置更大的栈大小：`cmake -B build ... -DCMAKE_CXX_FLAGS="/F10000000"`
+
+
+### UI：“模拟”仪表盘未显示
+UI 与上下文相关，需要满足特定条件：
+* 确保关卡中存在 `MjManager` 参与者。
+* 在 `MjManager` 设置中，确认 `bAutoCreateSimulateWidget` 已启用。 
+* 确保您已按照安装指南中的 **"显示资产(Show Assets)"** 步骤操作，以使引擎能够访问 UI 小部件。
+
+### 仿真：机器人处于静态状态
+* **控制源：**检查 `MjManager` 或 `MjArticulation` 的**控制源**是否设置为 **UI**。如果设置为 **ZMQ**，则 UI 滑块将被忽略。
+* **物理状态：** 确保 `MjManager` 未暂停，并且机器人组件设置中未将其设置为`静态(Static)`。 

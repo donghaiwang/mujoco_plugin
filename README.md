@@ -25,9 +25,7 @@
 
 ## 安装
 
-1. 克隆此存储库到您的引擎项目的插件`Plugins`文件夹
-2. 重新构建您的项目
-3. 在项目设置中启用 Mujoco 插件
+详细步骤参考 [入门教程](https://openhutb.github.io/mujoco_plugin/) 。
 
 
 ## 用法

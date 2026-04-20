@@ -15,7 +15,8 @@ title: 主页
 
 # mujoco 插件实现 <span id="implementation"></span>
 
-<!-- 更新至：https://github.com/URLab-Sim/UnrealRoboticsLab/commit/8f571e7f66eb06c65d390a47bc8211aa9bb64455 -->
+<!-- 更新至：Truncate test log up-front in build+test scripts
+https://github.com/donghaiwang/UnrealRoboticsLab/commit/51cce72a014a42612125ea6bef5a5494e4f94c5d -->
 
 虚幻机器人实验室 (Unreal Robotics Lab, URLab) 虚幻引擎插件将 [MuJoCo](https://github.com/google-deepmind/mujoco) 物理引擎直接嵌入到编辑器和运行时中。
 
