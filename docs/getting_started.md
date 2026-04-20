@@ -26,12 +26,12 @@
    ```
    Windows 的预编译二进制文件包含在 `third_party/install/`（MuJoCo、libzmq、CoACD）中。
    *(如果您在此处遇到编译器栈溢出错误，请参阅下面的 [故障排除](#troubleshooting) 部分。*
-3. **注册该模块：** 打开您的主机项目的 `.Build.cs` 文件（例如，`Source/YourProject/YourProject.Build.cs`），并将`"UnrealRoboticsLab"`添加到您的`PublicDependencyModuleNames`中：
+3. （不需要）**注册该模块：** 打开您的主机项目（新建HelloWorld项目，新建空项目会编译报错）的 `.Build.cs` 文件（例如，`Source/YourProject/YourProject.Build.cs`），并将`"UnrealRoboticsLab"`添加到您的`PublicDependencyModuleNames`中：
    ```csharp
    PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UnrealRoboticsLab" });
    ```
 
-4. **编译：** 右键点击您的`.uproject`文件，选择**Generate Visual Studio project files**，然后打开解决方案并在您的集成开发环境中**构建**您的项目。
+4. （不需要，双击.uproject文件即可提示编译）**编译：** 右键点击您的`.uproject`文件，选择**Generate Visual Studio project files**，然后打开解决方案并在您的集成开发环境中**构建**您的项目。
 
 5. **显示资产：** 在虚幻内容浏览器中，点击 **设置(Settings)**（齿轮图标）并勾选 **显示插件内容(Show Plugin Content)**。此操作是查看用户界面组件和插件资源所必需的。
 
@@ -54,7 +54,7 @@
 ### 来自 MJCF XML
 
 1. 获取机器人 XML（例如，来自 [MuJoCo Menagerie](https://github.com/google-deepmind/mujoco_menagerie) ）。
-2. 将 XML 文件拖入虚幻引擎内容浏览器。首次导入时，编辑器会提示安装所需的 Python 包（`trimesh`、`numpy`、`scipy`）——这些包默认已安装在虚幻引擎自带的 Python 环境中，因此无需额外设置。您也可以根据需要选择其他 Python 解释器。
+2. 将 XML 文件（比如：人形机器人[mujoco_menagerie\unitree_g1\g1_with_hands.xml](https://github.com/google-deepmind/mujoco_menagerie/tree/main/unitree_g1) ，肌肉骨骼人解析不完全）拖入虚幻引擎内容浏览器。首次导入时，编辑器会提示安装所需的 Python 包（`trimesh`、`numpy`、`scipy`）——这些包默认已安装在虚幻引擎自带的 Python 环境中，因此无需额外设置。您也可以根据需要选择其他 Python 解释器。
 3. 蓝图会自动生成，其中包含所有关节、实体、执行器和传感器等组件。
 
 ### 快速转换（静态网格）
@@ -104,6 +104,8 @@ TArray<float> Force = MyArticulation->GetSensorReading("wrist_force");
 
 ## 调式可视化
 
+有关完整的 PIE 叠加层（接触力、碰撞线框、关节轴、约束岛、实例/语义分割和肌肉/肌腱管）以及驱动它们的快捷键，请参阅 [调试可视化指南](./debug_visualization.md)。
+
 请参阅 [快捷键](guides/blueprint_reference.md#hotkeys) 了解键盘快捷键。
 
 ## 后续步骤
@@ -123,6 +125,12 @@ TArray<float> Force = MyArticulation->GetSensorReading("wrist_force");
 
 * **解决方法：** 将 Visual Studio 更新至最新版本（**VS 2022 (17.10+)** 或以上版本）或 **VS 2025**（这是 MuJoCo CI 的参考版本）。
 * **应变方法：** 通过运行以下命令强制设置更大的栈大小：`cmake -B build ... -DCMAKE_CXX_FLAGS="/F10000000"`
+* **相关Issues**：[github的Issue](https://github.com/URLab-Sim/UnrealRoboticsLab/issues/5) ，报错信息：
+
+   ```text
+   error MSB6006: “CL.exe”已退出，代码为 -1073741571。 [D:\work\donghaiwang\UnrealRoboticsLab\third_party\MuJoCo\src\build\plugin\sensor\sensor.vcxproj]
+   ```
+   未解决，暂时使用下载的发行版发到`UnrealRoboticsLab\third_party\install\MuJoCo`目录下
 
 
 ### UI：“模拟”仪表盘未显示

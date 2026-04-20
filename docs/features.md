@@ -77,9 +77,15 @@ Geometric: InsideSite, GeomDist, GeomNormal, GeomFromTo
 
 ## 调试可视化
 
-在编辑器运行(PlayInEditor, PIE) 期间，可通过热键切换接触点、碰撞线框、关节轴和视觉网格。可通过 MjSimulate 小部件实现单关节和全局切换。
+
+在编辑器运行(PlayInEditor, PIE) 期间，可通过快捷键切换接触力、碰撞线框、关节轴和限制弧、可视网格可见性、约束岛(constraint-island)着色、带睡眠调制(sleep modulation)功能的实例和语义分割着色器，以及具有激活驱动颜色和半径的平滑肌/肌腱管。
+
+有关所有快捷键，请参阅蓝图参考。有关完整的快捷键表和各模式的详细信息，请参阅调试可视化。
 
 请参阅 [蓝图参考文档](guides/blueprint_reference.md) 以获取所有快捷键。
+
+有关完整的热键表和每种模式的详细信息，请参阅 [调试可视化](guides/debug_visualization.md) 。
+
 
 ## 相机系统
 
