@@ -41,7 +41,7 @@
    ```
    如果您仅通过编辑器、蓝图或 ZMQ 使用插件，则**无需执行此操作**。
 
-7. **（可选）Python 桥接：** 配套的 [urlab_bridge](https://github.com/URLab-Sim/urlab_bridge) 软件包提供用于外部控制、强化学习策略部署和 ROS 2 桥接的 Python 中间件。请参阅其 README 文件以获取设置说明。：
+7. **（可选）Python 桥接：** 配套的 [urlab_bridge](https://github.com/URLab-Sim/urlab_bridge) 软件包提供用于外部控制、强化学习策略部署和 ROS 2 桥接的 Python 中间件。请参阅其 [urlab_bridge 文档](./guides/urlab_bridge.md) 以获取设置说明。
    ```bash
    # 已移到 urlab_bridge 仓库
    cd UnrealRoboticsLab/urlab_bridge
