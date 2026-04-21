@@ -8,7 +8,7 @@
 - **C++ 工程:** 此插件包含源代码，无法在仅使用蓝图的项目中使用。
 - **Visual Studio 2022** (带有 "Game development with C++" 工作负载)。
 - Python 3.11+ (可选，用于外部策略控制)
-- **[uv](https://github.com/astral-sh/uv)** -- 可选，用于 Python 依赖管理
+- [**uv**](https://github.com/astral-sh/uv)：可选，用于 Python 依赖管理
 
 ## 安装
 
@@ -51,6 +51,7 @@
 
 8. 有关编辑和构建铰链的说明，请参阅 [铰链构建器指南](guides/articulation_builder.md) 。
 
+
 ## 导入你的第一个机器人
 
 ### 来自 MJCF XML
@@ -73,6 +74,8 @@
 3. 点击播放（Play）——物理模拟自动开始。
 4. MjSimulate 小部件将显示（如果管理器中 `bAutoCreateSimulateWidget` 已启用）。
 
+![](./images/launch_in_editor.jpg)
+
 ## 控制机器人
 
 ### 从仪表盘
@@ -80,13 +83,14 @@
 * 使用 MjSimulate 小部件中的执行器滑块来移动关节。
 * 将控制源设置为 UI（在管理器上或每关节），以使用仪表板滑块而不是 ZMQ。 
 
+
 ### 来自 Python (ZMQ)
 
 1. `cd` 进入 `urlab_bridge/`.
 2. 安装：`uv sync` (或者 `pip install -e .`).
 3. 运行策略：`python src/run.py --policy unitree_12dof`
 4. 或者使用图形用户界面：`python src/run.py --ui`
-5. 选择您的关节和策略，点击开始。
+5. 选择您的铰链（Articulation）和策略（Policy），点击开始（Start Policy）。
 
 ![](./images/run_ui.jpg)
 
