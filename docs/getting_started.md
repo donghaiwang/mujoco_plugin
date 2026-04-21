@@ -84,9 +84,12 @@
 
 1. `cd` 进入 `urlab_bridge/`.
 2. 安装：`uv sync` (或者 `pip install -e .`).
-3. 运行策略：`uv run src/run_policy.py --policy unitree_12dof`
-4. 或者使用图形用户界面：`uv run src/urlab_policy/policy_gui.py`
+3. 运行策略：`python src/run.py --policy unitree_12dof`
+4. 或者使用图形用户界面：`python src/run.py --ui`
 5. 选择您的关节和策略，点击开始。
+
+![](./images/run_ui.jpg)
+
 
 ### 从蓝图
 
