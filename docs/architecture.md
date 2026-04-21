@@ -65,11 +65,10 @@ AAMjManager (轻量级协调器)
 
 DLL 加载顺序（顺序加载，每个 DLL 必须成功加载）：
 
-1. `mujoco.dll` (从 `third_party/install/MuJoCo/bin/`)
-2. `obj_decoder.dll` (相同路径)
-3. `stl_decoder.dll` (相同路径)
-4. `libzmq-v143-mt-4_3_6.dll` (从 `third_party/install/libzmq/bin/`)
-5. `lib_coacd.dll` (从 `third_party/install/CoACD/bin/`)
+1. `mujoco.dll` (从 `third_party/install/MuJoCo/bin/`) — 自 MuJoCo 3.7.0 版本起，obj/stl 解码器已编译到此 DLL 中；早期版本中提供的独立 `obj_decoder.dll` / `stl_decoder.dll` 不应加载（插件注册冲突）。 
+2. `libzmq-v143-mt-4_3_6.dll` (从 `third_party/install/libzmq/bin/`)
+3. `lib_coacd.dll` (从 `third_party/install/CoACD/bin/`)
+
 
 搜索路径策略：首先是 `third_party/install/{SubDir}/bin/`（编辑器/开发版本），然后是 `FPlatformProcess::GetModulesDirectory()`（DLL 与可执行文件放在一起的打包版本）。
 

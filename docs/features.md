@@ -89,10 +89,12 @@ Geometric: InsideSite, GeomDist, GeomNormal, GeomFromTo
 
 ## 相机系统
 
-- **MjCamera**: 场景捕获功能，连接到 MuJoCo 位点，通过 ZMQ 进行流传输，并遵循后期处理体积(volume)。
+- **MjCamera**: 场景捕获功能已集成到 MuJoCo 站点；每个摄像头可设置不同的捕获模式`CaptureMode`，包括照片级 RGB、深度、语义分割或实例分割；通过 ZMQ 进行流传输；支持后处理体积。
 - **MjOrbitCamera**: 具备目标检测、高度摆动和可配置焦距的自动旋转影视级摄像机
 - **MjKeyframeCamera**: 基于路径点的相机路径，具有平滑插值、`O` 关键帧播放/暂停功能
 
+
+有关每种模式的行为和模拟小部件预览，请参阅 [相机捕获模式](guides/camera_capture_modes.md) ；
 有关相机 API 的详细信息，请参阅 [蓝图参考文档](guides/blueprint_reference.md#mjkeyframecameraactor) 。
 
 ## 网络 (Zero Message Queue、ZMQ)
