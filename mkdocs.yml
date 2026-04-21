@@ -69,6 +69,7 @@ nav:
 - 使用蓝图编写脚本: 'guides/blueprint_reference.md'
 - ZMQ 网络与 ROS 2: 'guides/zmq_networking.md'
 - URLab 桥接: 'guides/policy_bridge.md'
+- MJCF Schema Coverage: mjcf_schema_coverage.md
 - 架构: 'architecture.md'
 - 引擎插件开发入门: 'introduction.md'
 

@@ -1,34 +1,38 @@
-# MJCF Schema Coverage
+# MJCF 模式覆盖率
 
-Checked against: **MuJoCo 3.7.0** (C API / mjSpec)
-Plugin version: UnrealRoboticsLab main branch, 2026-04-18
+已与以下版本进行比对：
+
+* **MuJoCo 3.7.0**（C API / mjSpec）
+
+* 插件版本：UnrealRoboticsLab 主分支，2026-04-18
+
 
 ## Summary
 
-| Category | Supported | Import-Only | Missing | Total |
+| 类别 | 支持 | 仅限导入 | 丢失 | 全部 |
 |----------|-----------|-------------|---------|-------|
-| body | 7 | 0 | 3 | 10 |
-| joint | 18 | 0 | 2 | 20 |
-| geom | 22 | 0 | 5 | 27 |
-| site | 10 | 0 | 2 | 12 |
-| actuator (common) | 14 | 0 | 2 | 16 |
-| actuator types | 10 | 0 | 0 | 10 |
-| sensor types | 41 | 0 | 0 | 41 |
-| tendon | 16 | 0 | 1 | 17 |
-| equality | 10 | 0 | 0 | 10 |
-| default | 6 | 0 | 5 | 11 |
-| compiler | 5 | 0 | 2 | 7 |
-| option | 17 | 0 | 3 | 20 |
-| keyframe | 6 | 0 | 0 | 6 |
-| contact | 2 | 0 | 0 | 2 |
-| asset | 3 | 0 | 1 | 4 |
-| flexcomp | 22 | 0 | 2 | 24 |
+| 刚体（body） | 7 | 0 | 3 | 10 |
+| 关节（joint） | 18 | 0 | 2 | 20 |
+| 几何（geom） | 22 | 0 | 5 | 27 |
+| 位点（site） | 10 | 0 | 2 | 12 |
+| 执行器（actuator） (common) | 14 | 0 | 2 | 16 |
+| 执行器类型 | 10 | 0 | 0 | 10 |
+| 传感器类型 | 41 | 0 | 0 | 41 |
+| 肌腱（tendon） | 16 | 0 | 1 | 17 |
+| 等式约束（equality） | 10 | 0 | 0 | 10 |
+| 默认 | 6 | 0 | 5 | 11 |
+| 编译器 | 5 | 0 | 2 | 7 |
+| 选项 | 17 | 0 | 3 | 20 |
+| 关键帧（keyframe） | 6 | 0 | 0 | 6 |
+| 接触（contact） | 2 | 0 | 0 | 2 |
+| 资产（asset） | 3 | 0 | 1 | 4 |
+| [柔性组件](./guides/flexcomp.md)（flexible component, flexcomp） | 22 | 0 | 2 | 24 |
 
 ---
 
-## body
+## 刚体（body）
 
-| Attribute | Status | Notes |
+| 属性 | 状态 | 备注 |
 |-----------|--------|-------|
 | name | SUPPORTED | Import: `ReadAttrString("name")`. Export: `mjs_setName` via `Setup()` |
 | childclass | SUPPORTED | Import: `ReadAttrString("childclass")`. Export: `mjs_setString(BodyToAttachTo->childclass)` |
@@ -384,7 +388,7 @@ Equality common attributes:
 | hfield | MISSING | Not parsed from `<asset>`. Geom type=hfield recognized but asset data not imported |
 
 
-## flexcomp
+## [flexcomp](./guides/flexcomp.md)
 
 URLab parses `<flexcomp>` into a `UMjFlexcomp` component and, at spec registration, serializes back to an MJCF fragment that MuJoCo's own parser expands via `mjs_attach`. All geometry types and DOF modes work without plugin-side reimplementation.
 
