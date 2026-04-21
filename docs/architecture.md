@@ -638,7 +638,19 @@ MuJoCo使用右手坐标系，Z 轴朝上，单位为米。而虚幻引擎使用
 
 - **MjSimulate 控件** (`WBP_MjSimulate`): 物理选项、每个执行器的滑块、调试可视化切换、重播控制、控制按钮。在 BeginPlay 时自动创建。
 - **ValidateSpec:** `AMjArticulation` 上的蓝图编译挂钩。创建一个临时规范，运行 `mj_compile()` 函数，并在不影响正在运行的模拟的情况下报告错误。
-- **MjGeomDetailCustomization** (`Source/URLabEditor/`): 编辑器中几何体属性的自定义细节面板。
+- **MjComponentDetailCustomizations** (`Source/URLabEditor/`): 针对所有 MuJoCo 组件类型进行详细自定义——隐藏内部属性（DefaultClass 指针、同步名称），并为网格几何体添加 CoACD 分解按钮。组件引用下拉菜单（目标、默认类等）在 UPROPERTY 声明中使用 `meta=(GetOptions)`。
+- **MjEditorStyle** (`Source/URLabEditor/`): 为蓝图组件树中的所有 MuJoCo 组件类型自定义 Slate 图标。图标从 `Resources/Icons/` 加载。 
+- **MuJoCo Outliner** (`SMjArticulationOutliner`): 可停靠的编辑器标签页（窗口菜单），显示关节蓝图组件层级结构的筛选和可搜索树状图。自动检测已打开的关节蓝图，提供类型筛选开关和汇总计数。
+
+### 编辑器模块钩子 (`FURLabEditorModule`)
+
+编辑器模块（`Source/URLabEditor/`）注册了多个钩子，用于改进蓝图编辑工作流程：
+
+| 钩子 | 触发器 | 它的功能 |
+|------|---------|--------------|
+| `OnObjectModified` (SCS) | 任何SCS修改 | **自动父级:** 推迟到下一个节拍，然后扫描所有节点并将传感器/执行器/默认值/肌腱/触点/相等性移动到其组织根文件夹下。 |
+| `OnObjectModified` (USCS_Node) | 变量名重命名 | **默认类名同步:** 使 `UMjDefault::ClassName` 与用户创建的默认值的 SCS 变量名保持同步。 |
+| `OnBlueprintPreCompile` | 蓝图编译按钮 | **FixupDefaultFlags:** 遍历 `DefaultsRoot` 下的所有内容，并将所有 `UMjComponent` 子类的 `bIsDefault` 标记为 `true`。确保在构建规范之前正确标记用户添加的默认值。 |
 
 ---
 
@@ -663,7 +675,7 @@ MuJoCo使用右手坐标系，Z 轴朝上，单位为米。而虚幻引擎使用
 
 ### MjGeomDetailCustomization
 
-`UMjGeom` 组件的自定义细节面板。直接在编辑器中为 CoACD 操作添加“分解网格(Decompose Mesh)”和“移除分解(Remove Decomposition)”按钮。
+所有 MuJoCo 组件类型都注册了 `IDetailCustomization` 类（位于 `MjComponentDetailCustomizations.h/.cpp` 中），这些类隐藏了诸如 `DefaultClass` 指针和自动同步字符串字段之类的内部属性。组件引用属性（例如 `TargetName`、`MjClassName`、`Geom1`）使用 UE 的原生 `meta=(GetOptions="FunctionName")` UPROPERTY 说明符渲染为下拉组合框——选项列表由 `UMjComponent::GetSiblingComponentOptions()` 填充，该函数会扫描蓝图的 SCS 树。网格几何体组件还会显示“分解网格(Decompose Mesh)”和“移除分解(Remove Decomposition)”按钮，用于 CoACD 操作。
 
 ---
 
@@ -744,7 +756,7 @@ XML文件会进行路径相对化处理：像`C:/Users/.../Saved/URLab/Converted
 
 ---
 
-## Key File Reference
+## 关键文件引用
 
 | 路径                                                           | 目的                       |
 |--------------------------------------------------------------|--------------------------|

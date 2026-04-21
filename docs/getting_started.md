@@ -49,6 +49,8 @@
    uv sync
    ```
 
+8. 有关编辑和构建铰链的说明，请参阅 [铰链构建器指南](guides/articulation_builder.md) 。
+
 ## 导入你的第一个机器人
 
 ### 来自 MJCF XML
