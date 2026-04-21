@@ -29,17 +29,38 @@ URLab Bridge 是同一 GitHub 组织下的独立配套仓库（`urlab_bridge`）
 
 ## 安装
 
-```bash
-cd Plugins/UnrealRoboticsLab/urlab_bridge
-uv python install 3.11
-uv venv --python 3.11 .venv
-uv pip install numpy pyzmq
+该桥接模块是一个**独立的代码仓库**—— <https://github.com/URLab-Sim/urlab_bridge> 。您可以将其克隆到任何位置；它无需与 URLab 插件放在同一仓库中。它使用 [uv](https://docs.astral.sh/uv/) 进行 Python 环境管理；需要 Python 3.11 或更高版本。
+
+```powershell
+git clone https://github.com/URLab-Sim/urlab_bridge.git
+cd urlab_bridge
 ```
 
-用于强化学习策略支持（RoboJuDo）
-```bash
-uv pip install -e RoboJuDo
-uv pip install dearpygui opencv-python
+最低安装要求（核心仪表盘 + ZMQ — 无策略）：
+
+```powershell
+uv sync
+```
+
+这会创建一个 `.venv/` 目录，强制 Python 版本为 3.11 或更高，并安装 `pyzmq`、`numpy`、`opencv-python` 和 `dearpygui`。
+
+为了支持强化学习策略（添加 `torch`、`onnxruntime`、`mujoco` 等）：
+
+```powershell
+uv sync --extra policy
+uv pip install -e ./RoboJuDo
+```
+
+如果 RoboJuDo 安装卡住（这是 `uv/setuptools` 动态依赖解析方面的一个已知问题），请使用 `--no-deps`，因为它所需的一切都已包含在策略`policy`附加文件中，然后添加它特有的两个依赖项：
+
+```powershell
+uv pip install --no-deps -e ./RoboJuDo
+uv pip install pygame pynput
+```
+
+依赖 PHC 的策略还需要：
+
+```powershell
 cd RoboJuDo && git submodule update --init --recursive
 ```
 
@@ -56,16 +77,16 @@ from urlab_policy.unreal_env import ZmqLink
 import struct, time, numpy as np
 
 zmq = ZmqLink("tcp://127.0.0.1:5555", "tcp://127.0.0.1:5556")
-time.sleep(1)  # Wait for connection
+time.sleep(1)  # 等待连接
 
-# Read state
+# 读取状态
 messages = zmq.drain()
 for topic, payload in messages.items():
     if "/joint/" in topic and len(payload) == 16:
         jid, pos, vel, acc = struct.unpack("<Ifff", payload)
         print(f"Joint {jid}: pos={pos:.3f}")
 
-# Send control (12 actuators, all to zero)
+# 发送控制 (12 执行器，全部归零)
 targets = np.zeros(12)
 zmq.send_control("my_robot_prefix", targets)
 
@@ -85,7 +106,7 @@ python src\urlab_policy\policy_gui.py
 
 **CLI(命令行):**
 ```bash
-python src/run_policy.py --policy unitree --prefix g1
+python src/run.py --policy unitree --prefix g1
 ```
 
 可用策略在`policy_registry.py`中注册。每个条目定义了策略配置类、环境配置、自由度数量和控制器类型。
