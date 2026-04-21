@@ -87,6 +87,13 @@ Geometric: InsideSite, GeomDist, GeomNormal, GeomFromTo
 有关完整的热键表和每种模式的详细信息，请参阅 [调试可视化](guides/debug_visualization.md) 。
 
 
+## 交互式扰动
+
+在 PIE 期间，可通过鼠标进行身体操控。双击鼠标左键选择，按住 Ctrl 键并拖动鼠标右键平移，按住 Ctrl 键并拖动鼠标左键旋转——手势映射与 MuJoCo 的模拟(`simulate`)查看器相同。由上游的 `mjv_applyPerturbForce` / `mjv_applyPerturbPose` 原语驱动，因此弹簧感完全相同。暂停时也可用，方便手动绘制姿势（与快照关键帧捕获配合使用效果更佳）。
+
+有关手势映射、gizmo 参考和暂停模式工作流程，请参阅 [交互式扰动](guides/perturbation.md) 。
+
+
 ## 相机系统
 
 - **MjCamera**: 场景捕获功能已集成到 MuJoCo 站点；每个摄像头可设置不同的捕获模式`CaptureMode`，包括照片级 RGB、深度、语义分割或实例分割；通过 ZMQ 进行流传输；支持后处理体积。
