@@ -23,7 +23,7 @@ pip install -e .
 
 # 运行策略 (可选):
 uv sync --extra policy            # + PyTorch, ONNX 等
-uv pip install -e ./RoboJuDo     # 策略框架 (内置的子模块)
+uv pip install -e ./RoboJuDo     # 策略框架 (内置的子模块)：安装模块 robojudo
 ```
 
 仪表盘（关节、传感器、摄像头、执行器控制）无需策略扩展即可正常工作。只有当您需要运行神经网络策略时才需要 RoboJuDo。
@@ -34,7 +34,7 @@ uv pip install -e ./RoboJuDo     # 策略框架 (内置的子模块)
 ## 快速开始
 
 ```bash
-# 启动仪表盘 (关节/传感器/相机查看器、执行器控制、可选策略运行器)
+# 启动仪表盘 (关节/传感器/相机查看器、执行器控制、可选策略运行器)，注意在关卡中必须放置 AMjManager，否则连接不上
 uv run src/run.py --ui
 
 # 以无头模式（不打开图形界面）运行特定策略

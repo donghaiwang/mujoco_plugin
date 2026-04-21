@@ -60,13 +60,13 @@
 ### 快速转换（静态网格）
 
 1. 在关卡中放置静态网格体对象（家具、道具等）。
-2. 给每个动作者添加一个 `MjQuickConvertComponent`。
+2. 给每个参与者添加一个 `MjQuickConvertComponent`。
 3. 设置为 **动态(Dynamic)** 表示物理碰撞，设置为 **静态(Static)** 表示固定碰撞。
 4. 启用 `ComplexMeshRequired` 非凸形状（使用 CoACD 分解）。
 
 ## 场景设置
 
-1. 在你的关卡中放置一个 `MjManager` 动作者（每个关卡一个）。 
+1. 在你的关卡中放置一个 `MjManager` 参与者（**必须**每个关卡一个）。 
 2. 将导入的机器人蓝图放置在关卡中。
 3. 点击播放（Play）——物理模拟自动开始。
 4. MjSimulate 小部件将显示（如果管理器中 `bAutoCreateSimulateWidget` 已启用）。
