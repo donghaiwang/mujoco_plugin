@@ -63,6 +63,7 @@ nav:
 - MJCF 导入: 'guides/mujoco_import.md'
 - 几何体与碰撞: 'guides/geometry_authoring.md'
 - 控制器框架: 'guides/controller_framework.md'
+- 调试可视化: 'guides/debug_visualization.md'
 - 持有和扭转控制: 'guides/possession_twist.md'
 - 使用蓝图编写脚本: 'guides/blueprint_reference.md'
 - ZMQ 网络与 ROS 2: 'guides/zmq_networking.md'

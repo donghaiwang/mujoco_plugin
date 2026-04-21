@@ -36,6 +36,7 @@ https://github.com/donghaiwang/UnrealRoboticsLab/commit/51cce72a014a42612125ea6b
 | [MJCF 导入](guides/mujoco_import.md) | 将 MuJoCo XML 模型导入虚幻引擎 |
 | [几何体与碰撞](guides/geometry_authoring.md) | 图元、网格几何体、快速转换、高度场 |
 | [控制器框架](guides/controller_framework.md) | PD、关键帧和自定义控制器 |
+| [调试可视化](guides/debug_visualization.md) | 快捷键驱动的叠加层：接触点、关节、岛状结构、分割、肌肉 |
 | [持有和扭转控制](guides/possession_twist.md) | WASD控制，弹簧臂摄像头 |
 | [使用蓝图编写脚本](guides/blueprint_reference.md) | 快捷键、API 使用、脚本工作流程 |
 | [ZMQ 网络与 ROS 2](guides/zmq_networking.md) | ZMQ 传输、主题、摄像头流媒体 |

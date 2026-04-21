@@ -42,7 +42,6 @@ uv run src/run.py --policy unitree_12dof --prefix g1
 
 # 测试 ZMQ 连接
 uv run src/run.py --test --prefix g1
-
 ```
 
 ## 可用策略
