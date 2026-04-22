@@ -26,7 +26,7 @@
    ```
    Windows 的预编译二进制文件包含在 `third_party/install/`（MuJoCo、libzmq、CoACD）中。
    *(如果您在此处遇到编译器栈溢出错误，请参阅下面的 [故障排除](#troubleshooting) 部分。*
-3. （不需要）**注册该模块：** 打开您的主机项目（新建HelloWorld项目，新建空项目会编译报错）的 `.Build.cs` 文件（例如，`Source/YourProject/YourProject.Build.cs`），并将`"UnrealRoboticsLab"`添加到您的`PublicDependencyModuleNames`中：
+3. （不需要）**注册该模块：** 打开您的主机项目（新建`游戏`中的`Intro To Unreal`项目，新建空项目会编译报错）的 `.Build.cs` 文件（例如，`Source/YourProject/YourProject.Build.cs`），并将`"UnrealRoboticsLab"`添加到您的`PublicDependencyModuleNames`中：
    ```csharp
    PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UnrealRoboticsLab" });
    ```
@@ -57,10 +57,12 @@
 ### 来自 MJCF XML
 
 1. 获取机器人 XML（例如，来自 [MuJoCo Menagerie](https://github.com/google-deepmind/mujoco_menagerie) ）。
-2. 将 XML 文件（比如：人形机器人[mujoco_menagerie\unitree_g1\g1_with_hands.xml](https://github.com/google-deepmind/mujoco_menagerie/tree/main/unitree_g1) ，肌肉骨骼人解析不完全）拖入虚幻引擎内容浏览器。首次导入时，编辑器会提示安装所需的 Python 包（`trimesh`、`numpy`、`scipy`）——这些包默认已安装在虚幻引擎自带的 Python 环境中，因此无需额外设置。您也可以根据需要选择其他 Python 解释器。
+2. 将 XML 文件（比如：人形机器人[RoboJuDo/assets/robots/g1
+/g1_29dof_rev_1_0.xml](https://github.com/HansZ8/RoboJuDo/blob/1129dbc73888457fef55a0853a38490487dcd7ca/assets/robots/g1/g1_29dof_rev_1_0.xml) ，肌肉骨骼人解析不完全）拖入虚幻引擎内容浏览器。首次导入时，编辑器会提示安装所需的 Python 包（`trimesh`、`numpy`、`scipy`）——这些包默认已安装在虚幻引擎自带的 Python 环境中，因此无需额外设置。您也可以根据需要选择其他 Python 解释器。
 3. 蓝图会自动生成，其中包含所有关节、实体、执行器和传感器等组件。
+4. 双击打开导入的蓝图类 `g1_29dof_rev_1_0`，点击`+添加`按钮将一个组件`MjPDController`添加到此参与者。
 
-### 快速转换（静态网格）
+### （可选）快速转换（静态网格）
 
 1. 在关卡中放置静态网格体对象（家具、道具等）。
 2. 给每个参与者添加一个 `MjQuickConvertComponent`。
@@ -71,10 +73,15 @@
 
 1. 在你的关卡中放置一个 `MjManager` 参与者（**必须**每个关卡一个）。 
 2. 将导入的机器人蓝图放置在关卡中。
-3. 点击播放（Play）——物理模拟自动开始。
+3. 点击场景的播放（Play）。
 4. MjSimulate 小部件将显示（如果管理器中 `bAutoCreateSimulateWidget` 已启用）。
+4. 启动图形用户界面：`python src/run.py --ui`，`铰链（Articulations）`中选择导入蓝图`g1_29dof_rev_1_0_*`，`策略控制（Policy Control）`选择`AMO Locomotion (29 DOF) [PHC]`，点击`开始策略(Start Policy)`；
+5. 在弹出的交互界面中点击`Play`（物理模拟自动开始）。
 
-![](./images/launch_in_editor.jpg)
+![](./img/g1_29dof_rev_1_0.gif)
+
+如果点击交互界面的`Play`后，机器人掉落到地面以下，则导入`RoboJuDo\assets\robots\g1\g1_12dof.xml`可以解决。
+
 
 ## 控制机器人
 
