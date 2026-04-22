@@ -87,7 +87,14 @@
 ### 来自 Python (ZMQ)
 
 1. `cd` 进入 `urlab_bridge/`.
-2. 安装：`uv sync` (或者 `pip install -e .`).
+2. 安装：`uv sync` (或者 `pip install -e .`)。或者
+   ```shell
+   pip install zmq numpy dearpygui
+   # 安装 RoboJuDo
+   cd RoboJuDo
+   pip install torch --index-url https://download.pytorch.org/whl/cpu
+   pip install -e .
+   ```
 3. 运行策略：`python src/run.py --policy unitree_12dof`
 4. 或者使用图形用户界面：`python src/run.py --ui`
 5. 选择您的铰链（Articulation）和策略（Policy），点击开始（Start Policy）。
@@ -113,7 +120,7 @@ TArray<float> Force = MyArticulation->GetSensorReading("wrist_force");
 
 ## 调式可视化
 
-有关完整的 PIE 叠加层（接触力、碰撞线框、关节轴、约束岛、实例/语义分割和肌肉/肌腱管）以及驱动它们的快捷键，请参阅 [调试可视化指南](./debug_visualization.md)。
+有关完整的 PIE 叠加层（接触力、碰撞线框、关节轴、约束岛、实例/语义分割和肌肉/肌腱管）以及驱动它们的快捷键，请参阅 [调试可视化指南](./guides/debug_visualization.md)。
 
 请参阅 [快捷键](guides/blueprint_reference.md#hotkeys) 了解键盘快捷键。
 
