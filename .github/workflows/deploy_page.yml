@@ -10,12 +10,24 @@ jobs:
     steps:
       - name: Checkout 
         uses: actions/checkout@v2
+
+      - name: Setup conda
+        uses: s-weigand/setup-conda@v1
+        with:
+          update-conda: true
+          python-version: ${{ matrix.python-version }}
+          conda-channels: anaconda, conda-forge
+      - run: conda --version
+      - run: which python
+      - run: conda install -n base -c conda-forge pandoc
+
       - name: Build
         uses: OpenHUTB/actions-mkdocs@main
         with:
           mkdocs_version: 'latest'
           requirements: 'docs/requirements.txt'
           configfile: 'mkdocs.yml'
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
