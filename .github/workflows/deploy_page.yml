@@ -11,12 +11,7 @@ jobs:
       - name: Checkout 
         uses: actions/checkout@v2
 
-      - name: Setup conda
-        uses: s-weigand/setup-conda@v1
-        with:
-          update-conda: true
-          python-version: ${{ matrix.python-version }}
-          conda-channels: anaconda, conda-forge
+      - uses: s-weigand/setup-conda@v1
       - run: conda --version
       - run: which python
       - run: conda install -n base -c conda-forge pandoc
