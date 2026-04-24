@@ -70,5 +70,9 @@
 
 2. **控制器**：该系统包含基于位置和扭矩的关节控制器，以及更高级的控制器，例如 Walk-These-Ways [@margolis2022walktheseways] 和 VBC [@liu2024visual]。无人机使用基于 PID 的控制器，而机械臂则依赖于逆运动学 (IK) 方法，例如 Mink [@Mink]。由于控制器在 ROS 生态系统中运行，因此可以轻松集成新的控制策略。
 
+3. **规划器**：运动规划采用基于学习和基于优化的规划器，例如 ViNT [@ViNT]、GNM [@GMM] 和 NoMAD [@NoMAD]。该框架基于 ROS 的架构确保了与外部规划器的兼容性。
+
+4. **视觉SLAM**：该系统包含 OrbSLAM2 [@OrbSLAM2]、OrbSLAM3 [@OrbSLAM3]和 MASt3R-SLAM [@MASt3R-SLAM]等视觉SLAM技术，可实现实时定位和建图。这些方法直接集成到框架中，从而在模拟环境中实现逼真的感知和建图。
+
 
 ## 参考文献
