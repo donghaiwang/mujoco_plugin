@@ -1,8 +1,7 @@
 name: Deploy
 on:
   push:
-    branches:
-      - main
+
 jobs:
   build:
     name: Deploy docs to GitHub Pages
@@ -11,11 +10,8 @@ jobs:
       - name: Checkout 
         uses: actions/checkout@v2
 
-      - uses: s-weigand/setup-conda@v1
-      - run: conda --version
-      - run: which python
-      - run: conda install -n base -c conda-forge pandoc
-
+      # CONDA_PYTHON_EXE: /usr/share/miniconda/bin/python
+      # 使用的是 /usr/local/lib/python3.13/site-packages
       - name: Build
         uses: OpenHUTB/actions-mkdocs@main
         with:
