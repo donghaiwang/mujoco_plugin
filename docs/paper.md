@@ -74,5 +74,78 @@
 
 4. **视觉SLAM**：该系统包含 OrbSLAM2 [@OrbSLAM2]、OrbSLAM3 [@OrbSLAM3]和 MASt3R-SLAM [@MASt3R-SLAM]等视觉SLAM技术，可实现实时定位和建图。这些方法直接集成到框架中，从而在模拟环境中实现逼真的感知和建图。
 
+## 仿真与真实世界对比
+
+为了评估图像编码器的仿真视觉输入与真实世界视觉输入之间的一致性，我们采用了梯度类别激活映射（Class Activation Mapping, Grad CAM）、EigenCAM（特征值类别激活映射）、余弦相似度和 KL 散度。这些方法同时评估了空间注意力和特征分布的相似性。
+
+**Grad-CAM** 计算类别得分 \( y^c \) 相对于特征图激活值的梯度：
+
+$$
+\alpha_k^c = \frac{1}{Z} \sum_i \sum_j 
+\frac{ \partial y^c}{\partial A_{ij}^k}
+$$
+
+$$
+L^c = \text{ReLU} ( \sum_k \alpha_k^c A^k )
+$$
+
+**EigenCAM**通过主成分分析 (Principal Component Analysis, PCA) 生成与类别无关的显著性图。
+
+$$
+C = \frac{1}{Z}
+\sum_{i,j}
+(A_{ij}^k - \mu)
+(A_{ij}^k - \mu)^T,
+$$
+
+$$
+L_\text{EigneCAM} = v_1 A^k
+$$
+
+其中 \( \mu \) 为平均激活值，\( v_1 \) 为第一主成分。
+
+**余弦相似度**衡量真实嵌入和模拟嵌入之间的特征对齐程度：
+
+$$
+S_\text{cosine}(P, Q) = 
+    \frac
+    {
+        P \cdot Q
+    }
+    {
+        \left|\left| P \right|\right|
+        \left|\left| Q \right|\right|
+    }
+$$
+其中 P 和 Q 是特征向量。值越高表示相似度越强。
+
+
+**KL 散度**量化分布差异：
+$$
+D_\text{KL} (P||Q) = 
+    \sum_i P(i) log \frac{P(i)}{Q(i)}
+$$
+数值越低表示对齐程度越高。
+
+
+为了比较基于真实世界数据训练的模型，我们使用了 CLIP [@CLIP] 和 ViNT [@ViNT] 中使用的 EfficientNet-B0 [@EfficientNet] 视觉编码器。首先，我们从真实世界中采集一张图像，并在模拟器中重建该图像。然后，我们使用 Grad-CAM 和 Eigen-CAM 处理这两张图像，生成注意力热图，如下图所示。
+
+
+| 真实 | 仿真 |
+|:---:|:---:|
+| ![移动界面](./img/real_image.png) | ![桌面界面](./img/sim_image.png) |
+| 真实图像 | 仿真图像 |
+| ![移动界面](./img/GradCAM_real.png) | ![桌面界面](./img/GradCAM_sim.png) |
+| 真实图像上 CLIP 模型的 GradCAM | 仿真图像上 模型的 GradCAM |
+| ![移动界面](./img/EigenCam_real.png) | ![桌面界面](./img/EigenCam_sim.png) |
+| 真实图像上 EficientNet 网络的 GradCAM | 仿真图像上 EficientNet 网络的 GradCAM |
+
+真实世界图像（左）和模拟图像（右）的对比，以及它们对应的 Grad-CAM（CLIP）和 EigenCAM（EfficientNet-B0）热图。高亮显示的类别标签为“锥体”。
+
+
+在这两种情况下，模型主要关注走廊中央的交通锥以及走廊尽头，这表明真实环境和模拟环境之间保留了最显著的特征。这种一致性表明，无论领域如何，模型都关注相同的高级结构，从而增强了模拟场景在特征表示方面的真实性。注意力模式的相似性也表明，关键对象在不同领域之间仍然可区分，这对于迁移学习和仿真到现实的应用至关重要。
+
+为了进一步量化相似性，我们计算了真实特征分布和模拟特征分布之间的KL散度（0.4679）和余弦相似度（0.7157）。余弦相似度越高，KL散度越低，表明两者之间的吻合度越高。我们并非旨在用完全相同的资源复制真实场景，而是选择在视觉上尽可能接近真实情况的模拟。尽管模拟中的资源与真实环境中的资源有所不同，但我们的研究结果，结合GradCAM和EigenCAM的对比，表明该模拟在视觉上足以满足我们的评估需求。
+
 
 ## 参考文献
