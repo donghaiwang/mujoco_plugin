@@ -2,7 +2,7 @@
 <!-- Articulation 铰链；Joint 关节 -->
 ## 概述
 
-UnrealRoboticsLab (URLab) 将 MuJoCo 物理引擎集成到虚幻引擎中，作为编辑器插件。`AAMjManager` 是顶层协调器参与者（Actor），但它将核心职责委托给四个 `UActorComponent` 子系统：`UMjPhysicsEngine`（物理模拟）、`UMjDebugVisualizer`（调试渲染）、`UMjNetworkManager`（ZMQ 发现）和 `UMjInputHandler`（热键）。组件系统与 MJCF 元素层级结构相对应——每个 XML 元素类型都映射到一个附加到 `AMjArticulation` 蓝图的 `UMjComponent` 子类。物理引擎运行在专用的异步线程中；游戏线程读取结果进行渲染。ZMQ 网络提供外部控制和传感器广播功能。
+UnrealRoboticsLab (URLab) 将 MuJoCo 物理引擎集成到虚幻引擎中，作为编辑器插件。`AAMjManager` 是顶层协调器参与者（Actor），但它将核心职责委托给四个参与者组件 `UActorComponent` 的子系统：`UMjPhysicsEngine`（物理引擎）、`UMjDebugVisualizer`（调试可视化）、`UMjNetworkManager`（网络管理器实现的 ZMQ 发现）和 `UMjInputHandler`（输入处理器实现的热键）。组件系统与 MJCF 元素层级结构相对应——每个 XML 元素类型都映射到一个附加到 `AMjArticulation` 蓝图的 `UMjComponent` 子类。物理引擎运行在专用的异步线程中；游戏线程读取结果进行渲染。ZMQ 网络提供外部控制和传感器广播功能。
 
 ---
 
