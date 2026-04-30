@@ -31,6 +31,7 @@ https://github.com/donghaiwang/UnrealRoboticsLab/commit/51cce72a014a42612125ea6b
 
 | 指南 | 涵盖的内容 |
 |-------|---------------|
+| [介绍](paper.md) | 理论说明 |
 | [入门](getting_started.md) | 安装、首次模拟、控制方法 |
 | [特性](features.md) | 完整特性参考 |
 | [MJCF 导入](guides/mujoco_import.md) | 将 MuJoCo XML 模型导入虚幻引擎 |
@@ -43,7 +44,7 @@ https://github.com/donghaiwang/UnrealRoboticsLab/commit/51cce72a014a42612125ea6b
 | [ZMQ 网络与 ROS 2](guides/zmq_networking.md) | ZMQ 传输、主题、摄像头流媒体 |
 | [URLab 桥接](guides/policy_bridge.md) | Python 中间件、强化学习策略、远程控制 |
 | [架构](architecture.md) | 子系统设计、线程模型、编译流程 |
-| [论文](paper.md) | 方法介绍 |
+| [UE4](./dev/ue4.md) | 迁移到UE4 |
 
 ---
 
@@ -62,14 +63,19 @@ https://github.com/donghaiwang/UnrealRoboticsLab/commit/51cce72a014a42612125ea6b
 
 ---
 
+# 参考
+
 ## 第三方软件
 
 | 库 | 许可证 | 角色 |
 |---------|---------|------|
 | [MuJoCo](https://github.com/google-deepmind/mujoco) | Apache 2.0 | 物理模拟引擎 |
 | [CoACD](https://github.com/SarahWeiii/CoACD) | MIT | 凸近似分解(Convex approximate decomposition, CoACD) |
-| [libzmq](https://zeromq.org) | MPL 2.0 | 高性能消息传递 |
+| [libzmq](https://zeromq.org) | MPL 2.0 | 高性能消息传递，即零开销消息队列（Zero cost Message Queue, ZMQ），是一个无代理、点对点的高性能异步消息传递库 |
 
+## 引用
+
+* [deepwiki](https://deepwiki.com/URLab-Sim/UnrealRoboticsLab/)
 
 
 如果对文档中的任何问题可以在 [本文档的源码仓库](https://github.com/OpenHUTB/mujoco_plugin) 中的 [问题](https://github.com/OpenHUTB/mujoco_plugin/issues) 页面讨论或者提交 [拉取请求](https://zhuanlan.zhihu.com/p/153381521) 直接修改文档。
