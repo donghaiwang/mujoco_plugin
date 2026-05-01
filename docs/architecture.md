@@ -46,11 +46,11 @@ AAMjManager (每个关卡一个单例协调器)
    * 提供回调注册（[RegisterPreStepCallback](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjPhysicsEngine.h#L242) 在每次物理计算步骤之前调用、[RegisterPostStepCallback](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjPhysicsEngine.h#L245) 在每次物理计算步骤后调用 ），以便其他子系统和 ZMQ 组件可以接入步进循环而无需直接耦合。此外，还提供 [StepSync](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjPhysicsEngine.h#L205) 在调用线程上同步执行模拟步骤、[ResetSimulation](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjPhysicsEngine.h#L202) 和快照([Snapshot](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjPhysicsEngine.h#L211))/恢复([Restore](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjPhysicsEngine.h#L214))功能。
 
 
-### UMjDebugVisualizer
+### 调试可视化 UMjDebugVisualizer
 
-**文件：** `Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h`
+**文件：** [Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/main/Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h)
 
-拥有 `DebugData`（来自 `MjDebugTypes.h` 的 `FMuJoCoDebugData`）和 `DebugMutex`。`CaptureDebugData` 注册为 `UMjPhysicsEngine` 的后步骤回调函数——它将物理线程上互斥锁下的接触数据复制到该线程。`TickComponent` 在游戏线程上渲染接触力箭头/点。为每种调试可视化模式提供切换方法。
+拥有线程安全的调试数据 [DebugData](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h#L132)（来自 [MjDebugTypes.h](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/main/Source/URLab/Public/MuJoCo/Core/MjDebugTypes.h) 的 [FMuJoCoDebugData](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjDebugTypes.h#L9) ）和 调试互斥量 [DebugMutex](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h#L133) 。[CaptureDebugData](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h#L138) 注册为 [UMjPhysicsEngine](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/main/Source/URLab/Public/MuJoCo/Core/MjPhysicsEngine.h) 的后步骤回调函数——它将物理线程上互斥锁下的接触数据复制到该线程。节拍组件 [TickComponent](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjDebugVisualizer.h#L61) 在游戏线程上渲染接触力箭头/点。为每种调试可视化模式提供切换方法。
 
 
 ### UMjNetworkManager
