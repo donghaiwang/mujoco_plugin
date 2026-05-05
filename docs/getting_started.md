@@ -106,7 +106,7 @@
 4. 或者使用图形用户界面：`python src/run.py --ui`
 5. 选择您的铰链（Articulation）和策略（Policy），点击开始（Start Policy）。
 
-![](./images/run_ui.jpg)
+![](./img/run_ui.jpg)
 
 
 ### 从蓝图
