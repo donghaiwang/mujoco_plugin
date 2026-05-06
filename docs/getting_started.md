@@ -7,7 +7,7 @@
 - **MuJoCo 3.7+：**集成在 `third_party/` 目录中（从源代码构建）。
 - **C++ 工程:** 此插件包含源代码，无法在仅使用蓝图的项目中使用。
 - **Visual Studio 2022** (带有 "Game development with C++" 工作负载)。
-- Python 3.11+ (可选，用于外部策略控制)
+- **Python 3.11+** (可选，用于外部策略控制)
 - [**uv**](https://github.com/astral-sh/uv)：可选，用于 Python 依赖管理
 
 ## 安装
@@ -101,6 +101,7 @@
    cd RoboJuDo
    pip install torch --index-url https://download.pytorch.org/whl/cpu
    pip install -e .
+   cd ..
    ```
 3. 运行策略：`python src/run.py --policy unitree_12dof`
 4. 或者使用图形用户界面：`python src/run.py --ui`

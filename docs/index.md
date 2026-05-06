@@ -27,7 +27,7 @@ https://github.com/donghaiwang/UnrealRoboticsLab/commit/51cce72a014a42612125ea6b
 
 ---
 
-## 指南  <span id="guide"></span>
+## 插件指南  <span id="guide"></span>
 
 | 指南 | 涵盖的内容 |
 |-------|---------------|
@@ -48,17 +48,31 @@ https://github.com/donghaiwang/UnrealRoboticsLab/commit/51cce72a014a42612125ea6b
 
 ---
 
-## API 参考
+## 肌肉骨骼人
 
-[API参考文档](api/index.md) 会在每次构建时根据 C++ 头文件自动生成。它涵盖了插件中的每个类、结构体和枚举。
+| 指南 | 涵盖的内容 |
+|-------|---------------|
+| [肌肉骨骼人模型](./ms/human_700.md) | 全身肌肉骨骼模型参考模型 |
 
 
+## 人形机器人
 
+| 指南 | 涵盖的内容 |
+|-------|---------------|
+| [人形机器人模型](./ms/human_700.md) | 人形机器人参考模型 |
+
+---
 
 # 引擎插件开发 <span id="dev"></span>
 
 [__引擎插件开发入门__](introduction.md) — 引擎插件开发的环境配置
 
+
+
+--- 
+## API 参考
+
+[API参考文档](api/index.md) 会在每次构建时根据 C++ 头文件自动生成。它涵盖了插件中的每个类、结构体和枚举。
 
 
 ---

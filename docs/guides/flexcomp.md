@@ -47,6 +47,9 @@ URLab 利用 MuJoCo 自带的宏展开器——我们将组件的属性序列化
 
 运行时，`UMjFlexcomp::Bind` 会创建一个 `UDynamicMeshComponent`，该组件镜像源静态网格（几何体、UV 和法线均从 LOD 0 复制）。每个游戏节拍，都会从 `mjData.flexvert_xpos` 读取变形后的顶点位置，通过 welded→raw 重映射表进行映射，并通过 `FastNotifyPositionsUpdated` 推送。源静态网格会被隐藏；其材质会在动态网格上重用。
 
+!!! 笔记
+    UDynamicMeshComponent 是一种类似于 UProceduralMeshComponent 的网格组件，不同之处在于它基于内部的 UDynamicMesh 实例（封装了 FDynamicMesh3）来生成可渲染几何体。它全面支持对渲染缓冲区进行部分更新、自定义颜色、将网格内部分解成多个块以提高渲染更新效率，以及支持附加“后处理器”以动态生成渲染网格。
+
 **已知限制——TAA 重影。** 由于 UE 的 `FLocalVertexFactory` 没有前一帧位置顶点流，也没有公开的 API 提供此功能，因此 CPU 变形的网格会产生零运动矢量。时间抗锯齿 (Temporal Anti-Aliasing, TAA) 会累积过时的前一帧采样，从而在快速变形时产生可见的拖影/重影。解决方法：
 
 - 对于弹性较大的场景，请将**Project Settings → Rendering → Anti-Aliasing Method**设置为 `FXAA`（或在 DefaultEngine.ini 中设置 `r.AntiAliasingMethod=1`）。 
