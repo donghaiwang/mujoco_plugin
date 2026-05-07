@@ -6,8 +6,10 @@ title: 主页
 
 
 * [__mujoco 插件实现__](#implementation)  
-    * [指南](#guide)
-* [__引擎插件开发__](#dev)  
+    * [插件指南](#guide)
+    * [肌肉骨骼人](#ms)
+    * [人形机器人](#humanoid)
+* [__引擎插件开发__](#dev)
 
 ---
 
@@ -48,18 +50,18 @@ https://github.com/donghaiwang/UnrealRoboticsLab/commit/51cce72a014a42612125ea6b
 
 ---
 
-## 肌肉骨骼人
+## 肌肉骨骼人 <span id="ms"></span>
 
 | 指南 | 涵盖的内容 |
 |-------|---------------|
 | [肌肉骨骼人模型](./ms/human_700.md) | 全身肌肉骨骼模型参考模型 |
 
 
-## 人形机器人
+## 人形机器人 <span id="humanoid"></span>
 
 | 指南 | 涵盖的内容 |
 |-------|---------------|
-| [人形机器人模型](./ms/human_700.md) | 人形机器人参考模型 |
+| [人形机器人模型](./humanoid/g1.md) | 人形机器人参考模型 |
 
 ---
 

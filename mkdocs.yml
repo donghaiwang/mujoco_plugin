@@ -63,6 +63,7 @@ hooks:
 copyright: OpenHUTB 版权所有 &copy; {year}
 
 nav:
+- 介绍: 'paper.md'
 - 入门: 'getting_started.md'
 - 特性: 'features.md'
 - MJCF 导入: 'guides/mujoco_import.md'
