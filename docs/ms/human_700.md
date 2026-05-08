@@ -25,6 +25,8 @@ mujoco/bin/simulate.exe  MS-Human-700/MS-Human-700.xml
 
 ## DynSyn
 
+DynSyn：用于过驱动具身系统高效学习与控制的动态协同表示[@he2024dynsyn]。
+
 1.安装
 ```shell
 git clone https://github.com/OpenHUTB/DynSyn.git
@@ -42,7 +44,12 @@ poetry install
 python dynsyn/dynsyn.py -f configs/DynSynGen/dynsyn.yaml -e myoLegWalk
 # 训练
 python dynsyn/sb3_runner/runner.py -f configs/DynSyn/myowalk.json
-
+```
+**评估**过程中，dynsyn_weight_amp 的值取决于配置文件中是否设置了该参数。因此，在评估过程中，我们可以设置 dynsyn_weight_amp 以使其与训练设置保持一致。如果在训练过程中已经设置了 dynsyn_weight_amp，则在评估过程中无需再次设置。
+```
+"load_kwargs": {
+    "dynsyn_weight_amp": 0.1
+}
 ```
 
 
@@ -61,8 +68,17 @@ cd Qflex
 conda activate hutb_3.12
 # 
 python scripts/train.py  --alg qflex --env MS700Locomotion-v1 --seed 100 --total_step 50000000 --num_vec_envs 224 --hidden_dim 1024 --diffusion_hidden_dim 1024 --record_video
+# 减少 num_vec_envs 用于调试:
+python scripts/train.py --alg qflex --env MS700Locomotion-v1 --seed 100 --total_step 50000000 --num_vec_envs 4 --hidden_dim 1024 --diffusion_hidden_dim 1024 --record_video
 ```
 
 报错：[No module named 'relax.spinlock'](https://github.com/LNSGroup/Qflex/issues/1)
+
+Windows 下安装`relax-0.1.0`：
+```shell
+cd Qflex
+# windows下需要注释掉 https://github.com/LNSGroup/Qflex/blob/a028cfa76525a62bfb90d76c6f1535f697121383/src/futex.c#L3
+pip install -e .
+```
 
 
