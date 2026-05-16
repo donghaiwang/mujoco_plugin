@@ -77,7 +77,7 @@ float Angle = Robot->GetJointAngle("elbow");
 
 ## 碰撞响应
 
-`AMjArticulation` 具有 **碰撞时(On Collision)**事件分发器。触发条件包括：自身几何体`SelfGeom` (UMjGeom*)、其他几何体`OtherGeom` (UMjGeom*) 和接触位置`ContactPos` (FVector)。
+Mujoco 铰链参与者（`AMjArticulation`）具有 **碰撞时(On Collision)**事件分发器。触发条件包括：自身几何体`SelfGeom` (UMjGeom*)、其他几何体 `OtherGeom` (UMjGeom*) 和接触位置`ContactPos` (FVector)。
 
 **蓝图：** 选择关节参考 → **分配碰撞时事件(Assign On Collision)** → 连接到您的逻辑。
 
