@@ -230,12 +230,12 @@ Mujoco 脉冲启动器 （`AMjImpulseLauncher`）会对 Mujoco 刚体（`MjBody`
 
 ## 快捷键
 
-由 `AAMjManager::Tick` 处理。在 PIE 期间处于活动状态：
+由节拍信号（`AAMjManager::Tick`）处理。在编辑器中运行（PIE）期间处于活动状态：
 
 | 键 | 动作 |
 |-----|--------|
 | **1** | 切换调试联系人 |
-| **2** | 切换视觉网格 |
+| **2** | 切换视觉网格的显示/隐藏 |
 | **3** | 切换关节碰撞线框 |
 | **4** | 切换调试关节 |
 | **5** | 切换快速转换碰撞线框 |
@@ -246,11 +246,11 @@ Mujoco 脉冲启动器 （`AMjImpulseLauncher`）会对 Mujoco 刚体（`MjBody`
 
 ---
 
-## 每个关节的控制源
+## 每个铰链的控制源
 
-每个 `AMjArticulation` 都有一个 `ControlSource` 字段（`0` = ZMQ，`1` = UI），该字段会覆盖管理器级别的 `EControlSource` 设置。这样，您就可以在同一场景中通过控制面板滑块控制部分机器人，同时接收其他机器人的外部 ZMQ 命令。
+每个 Mujoco 铰链参与者（`AMjArticulation`）都有一个控制源（`ControlSource`）字段（`0` = ZMQ，`1` = UI），该字段会覆盖管理器级别的控制源（`EControlSource`）设置。这样，您就可以在同一场景中通过控制面板滑块控制部分机器人，同时接收其他机器人的外部 ZMQ 命令。
 
-**蓝图：** 在“详细信息(Details)”中或通过“设置(Set)”节点设置关节参考的`ControlSource`。 
+**蓝图：** 在“详细信息(Details)”中或通过“设置(Set)”节点设置关节参考的控制源（`ControlSource`）。 
 
 **C++:**
 ```cpp
