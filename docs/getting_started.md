@@ -185,5 +185,9 @@ UI 与上下文相关，需要满足特定条件：
 * **控制源：**检查 `MjManager` 或 `MjArticulation` 的**控制源**是否设置为 **UI**。如果设置为 **ZMQ**，则 UI 滑块将被忽略。
 * **物理状态：** 确保 `MjManager` 未暂停，并且机器人组件设置中未将其设置为`静态(Static)`。 
 
+### 直接下载已配置好的工程
+
+提供已经配置好的[下载链接](https://pan.baidu.com/s/1n2fJvWff4pbtMe97GOqtvQ?pwd=hutb)中的`工程/UErobotics 5.7.7z`，解压后直接双击运行`UErobotics.uproject`即可打开虚幻编辑器的场景。
+
 
 
