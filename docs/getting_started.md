@@ -1,6 +1,18 @@
 # 入门
 
-## 先决条件
+* __[先决条件](#prerequisite‌)__  
+* __[导入你的第一个机器人](#import_first_robot)__
+* __[控制机器人](#control_robot)__  
+* __[调式可视化](#debug_visualization)__
+* __[后续步骤](#next_steps)__  
+* __[故障排除](#troubleshooting)__  
+    * [构建错误：MSVC 栈溢出（错误代码：0xC00000FD）](#stack_overflow)
+    * [UI：“模拟”仪表盘未显示](#no_widget)
+    * [旧版UE：内容资源无法加载](#assert_load_failed)
+    * [仿真：机器人处于静态状态](#keep_static)
+    * [直接下载已配置好的工程](#download_proj)
+
+## 先决条件 <span id="prerequisite‌"></span>
 
 - **虚幻引擎 5.7+：** C++插件代码和第三方库应该可以在早期的 UE5 版本上编译，但内置的`.uasset`文件（UI组件、材质、输入映射）是在5.7版本中序列化的，因此不向下兼容。核心模拟功能在旧版本上仍然可以运行，但仪表盘UI和一些编辑器功能将会缺失。如果确实需要支持旧版本，我们可以考虑提供兼容的资源。
 - **Windows 10/11：**Linux 还在实验阶段。
@@ -52,7 +64,7 @@
 8. 有关编辑和构建铰链的说明，请参阅 [铰链构建器指南](guides/articulation_builder.md) 。
 
 
-## 导入你的第一个机器人
+## 导入你的第一个机器人 <span id="import_first_robot"></span>
 
 ### 来自 MJCF XML
 
@@ -83,7 +95,7 @@
 如果点击交互界面的`Play`后，机器人掉落到地面以下，则导入`RoboJuDo\assets\robots\g1\g1_12dof.xml`可以解决。
 
 
-## 控制机器人
+## 控制机器人 <span id="control_robot"></span>
 
 ### 从仪表盘
 
@@ -126,13 +138,13 @@ TArray<float> Force = MyArticulation->GetSensorReading("wrist_force");
 
 所有的功能都是可调用的蓝图`BlueprintCallable`.
 
-## 调式可视化
+## 调式可视化 <span id="debug_visualization"></span>
 
 有关完整的 PIE 叠加层（接触力、碰撞线框、关节轴、约束岛、实例/语义分割和肌肉/肌腱管）以及驱动它们的快捷键，请参阅 [调试可视化指南](./guides/debug_visualization.md)。
 
 请参阅 [快捷键](guides/blueprint_reference.md#hotkeys) 了解键盘快捷键。
 
-## 后续步骤
+## 后续步骤 <span id="next_steps"></span>
 
 - [特性](features.md) -- 完整功能参考
 - [MJCF 导入](guides/mujoco_import.md) -- 导入管道详情
@@ -142,9 +154,9 @@ TArray<float> Force = MyArticulation->GetSensorReading("wrist_force");
 - [开发者工具](guides/developer_tools.md) -- 模式跟踪、 XML 调试、构建/测试技能
 
 
-## 故障排除
+## 故障排除 <span id="stack_overflow"></span>
 
-### 构建错误：MSVC 栈溢出（错误代码：0xC00000FD）
+### 构建错误：MSVC 栈溢出（错误代码：0xC00000FD） <span id="troubleshooting"></span>
 如果 `build_all.ps1` 脚本因错误代码 `-1073741571` 而失败，这表明您的编译器在处理 MuJoCo 复杂的传感器模板时已耗尽了内部内存。
 
 * **解决方法：** 将 Visual Studio 更新至最新版本（**VS 2022 (17.10+)** 或以上版本）或 **VS 2025**（这是 MuJoCo CI 的参考版本）。
@@ -157,7 +169,7 @@ TArray<float> Force = MyArticulation->GetSensorReading("wrist_force");
    未解决，暂时使用下载的发行版发到`UnrealRoboticsLab\third_party\install\MuJoCo`目录下
 
 
-### UI：“模拟”仪表盘未显示
+### UI：“模拟”仪表盘未显示 <span id="no_widget"></span>
 UI 与上下文相关，需要满足特定条件：
 
 * 确保关卡中存在 `MjManager` 参与者。
@@ -165,7 +177,7 @@ UI 与上下文相关，需要满足特定条件：
 * 确保您已按照安装指南中的 **"显示资产(Show Assets)"** 步骤操作，以使引擎能够访问 UI 小部件。
 
 
-### 旧版UE：内容资源无法加载
+### 旧版UE：内容资源无法加载 <span id="assert_load_failed"></span>
 
 捆绑的 `.uasset` 文件（UI 组件、材质、输入映射）是用 UE 5.7 保存的，无法在早期版本中加载。C++ 插件代码可以编译，核心仿真也能运行，但仪表盘 UI 和一些编辑器功能会缺失。
 
@@ -180,12 +192,12 @@ UI 与上下文相关，需要满足特定条件：
 此方法适用于 UMG 控件蓝图、材质图表和输入映射资产。
 
 
-### 仿真：机器人处于静态状态
+### 仿真：机器人处于静态状态 <span id="keep_static"></span>
 
 * **控制源：**检查 `MjManager` 或 `MjArticulation` 的**控制源**是否设置为 **UI**。如果设置为 **ZMQ**，则 UI 滑块将被忽略。
 * **物理状态：** 确保 `MjManager` 未暂停，并且机器人组件设置中未将其设置为`静态(Static)`。 
 
-### 直接下载已配置好的工程
+### 直接下载已配置好的工程  <span id="download_proj"></span>
 
 提供已经配置好的[下载链接](https://pan.baidu.com/s/1n2fJvWff4pbtMe97GOqtvQ?pwd=hutb)中的`工程/UErobotics 5.7.7z`，解压后直接双击运行`UErobotics.uproject`即可打开虚幻编辑器的场景。
 
