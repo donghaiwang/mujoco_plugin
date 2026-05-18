@@ -17,13 +17,13 @@ git clone https://github.com/donghaiwang/URLab_Bridge.git --recursive
 # 推荐 uv，安装方法：https://hellowac.github.io/uv-zh-cn/getting-started/installation/#__tabbed_1_2
 cd URLab_Bridge
 uv sync                          # 核心依赖 (ZMQ, NumPy, OpenCV, DearPyGui)
-
-cd 
-pip install -e .
-
+# pip install requirements.txt
 # 运行策略 (可选):
 uv sync --extra policy            # + PyTorch, ONNX 等
-uv pip install -e ./RoboJuDo     # 策略框架 (内置的子模块)：安装模块 robojudo
+
+cd RoboJuDo
+pip install -e .
+# uv pip install -e ./RoboJuDo     # 策略框架 (内置的子模块)：安装模块 robojudo
 ```
 
 仪表盘（关节、传感器、摄像头、执行器控制）无需策略扩展即可正常工作。只有当您需要运行神经网络策略时才需要 RoboJuDo。
@@ -35,13 +35,15 @@ uv pip install -e ./RoboJuDo     # 策略框架 (内置的子模块)：安装模
 
 ```bash
 # 启动仪表盘 (关节/传感器/相机查看器、执行器控制、可选策略运行器)，注意在关卡中必须放置 AMjManager，否则连接不上
-uv run src/run.py --ui
+python src/run.py --ui
 
 # 以无头模式（不打开图形界面）运行特定策略
-uv run src/run.py --policy unitree_12dof --prefix g1
+# uv run src/run.py --policy unitree_12dof --prefix g1
+python src/run.py --policy unitree_12dof --prefix g1
+python src/run.py --policy amo --prefix g1
 
 # 测试 ZMQ 连接
-uv run src/run.py --test --prefix g1
+python src/run.py --test --prefix g1
 ```
 
 ## 可用策略

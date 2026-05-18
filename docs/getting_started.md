@@ -87,10 +87,12 @@
 2. 将导入的机器人蓝图放置在关卡中。
 3. 点击场景的播放（Play）。
 4. MjSimulate 小部件将显示（如果管理器中 `bAutoCreateSimulateWidget` 已启用）。
-4. 启动图形用户界面：`python src/run.py --ui`，`铰链（Articulations）`中选择导入蓝图`g1_29dof_rev_1_0_*`，`策略控制（Policy Control）`选择`AMO Locomotion (29 DOF) [PHC]`，勾选`Force Twist`，稍微调大一点Vx(m/s)，点击`开始策略(Start Policy)`；等待出现变成`Steps: 1+`；
+4. 启动图形用户界面：`python src/run.py --ui`，`铰链（Articulations）`中选择导入蓝图`g1_29dof_rev_1_0_*`，`策略控制（Policy Control）`选择`AMO Locomotion (29 DOF) [PHC]`，勾选`Force Twist`，稍微调大一点Vy(m/s)（比如 0.075 实现倒着走），点击`开始策略(Start Policy)`；等待出现变成`Steps: 1+`；
 5. 在弹出的交互界面中点击`Play`（物理模拟自动开始）。为了持续跟踪人形机器人的控制效果，编辑器场景的右上角的Articulation 中选中`g1_29dof_rev_1_0_*`，并点击`Posess`。
 
 ![](./img/g1_29dof_rev_1_0.gif)
+
+停止并重置，先按`Pause`，然后再按`Reset`。
 
 如果点击交互界面的`Play`后，机器人掉落到地面以下，则导入`RoboJuDo\assets\robots\g1\g1_12dof.xml`可以解决。
 
@@ -108,7 +110,7 @@
 1. `cd` 进入 `urlab_bridge/`.
 2. 安装：`uv sync` (或者 `pip install -e .`)。或者
    ```shell
-   pip install zmq numpy dearpygui
+   pip install requirements.txt
    # 安装 RoboJuDo
    cd RoboJuDo
    pip install torch --index-url https://download.pytorch.org/whl/cpu

@@ -1,25 +1,45 @@
 # MJCF 导入
 
-Unreal Robotics Lab 可以导入标准的 MuJoCo XML (MJCF) 文件，并将完整的模型层级结构重建为 Unreal 组件。您可以从 MuJoCo Menagerie 或您自己的项目中获取 `.xml` 模型，然后将其直接拖入内容浏览器。
+Unreal Robotics Lab 可以导入标准的 MuJoCo XML (MJCF) 文件，并将完整的模型层级结构重建为 Unreal 组件。您可以从 MuJoCo Menagerie 或您自己的项目中获取 [.xml](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Private/MuJoCo/Core/MjPhysicsEngine.cpp#L255) 模型，然后将其直接拖入内容浏览器。
 
 ---
 
 ## 导入
 
-1. 将 `.xml` 文件拖入虚幻 **内容浏览器(Content Browser)** 。
-2. 首次导入时，编辑器会提示安装所需的 Python 包（`trimesh`、`numpy`、`scipy`）。默认情况下，这些包会安装到 UE 自带的 Python 环境中，无需额外配置 Python。您也可以通过对话框选择自定义解释器（conda、venv 等）。所选路径会保存到 `Config/LocalUnrealRoboticsLab.ini` 文件中（每个机器单独保存，不会提交到源代码控制系统）。
-3. `UMujocoImportFactory` 使用配置的 Python 运行 `Scripts/clean_meshes.py`:
+1. 将 [.xml](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Private/MuJoCo/Core/MjPhysicsEngine.cpp#L255) 文件拖入虚幻**内容浏览器(Content Browser)** 。
+2. 首次导入时，编辑器会提示安装所需的 Python 包（[trimesh](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLabEditor/Private/MjPythonHelper.cpp#L168)、[numpy](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLabEditor/Private/MjPythonHelper.cpp#L168)、[scipy](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLabEditor/Private/MjPythonHelper.cpp#L168)）。默认情况下，这些包会安装到 UE 自带的 Python 环境中，无需额外配置 Python。您也可以通过对话框选择自定义解释器（conda、venv 等）。所选路径会保存到 [Config/LocalUnrealRoboticsLab.ini](https://github.com/OpenHUTB/UnrealRoboticsLab/tree/main/Config) 文件中（每个机器单独保存，不会提交到源代码控制系统）。
+3. [UMujocoImportFactory](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLabEditor/Private/MujocoImportFactory.cpp#L38) 使用配置的 Python 运行清洗网格脚本 [Scripts/clean_meshes.py](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/main/Scripts/clean_meshes.py):
    - 解析 XML 以查找所有引用的网格资产
-   - 检测 GLB stem 冲突（例如，`link1.obj` 和 `link1.stl` 两者都产生 `link1.glb`），并重命名它们。
+   - 检测 GLB stem 冲突（例如，[link1.obj](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Scripts/clean_meshes.py#L27) 和 [link1.stl](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Scripts/clean_meshes.py#L27) 两者都产生 [link1.glb](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Scripts/clean_meshes.py#L27)），并重命名它们。
    - 将网格转换为 GLB 格式（保留 UV，去除嵌入纹理）
-   - 生成带有更新网格参考的`_ue.xml`
+   - 生成带有更新网格参考的 [_ue.xml](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLabEditor/Private/MujocoImportFactory.cpp#L106)
    - 如果用户跳过 Python 设置，则会使用原始 XML（某些网格可能无法正确显示）。
-4. 工厂通过四次解析过程创建 `AMjArticulation` 蓝图：
+4. 工厂通过四次解析过程创建 [铰链 AMjArticulation](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/352a9ea7bdce0eaa9e1bd365454f3b7ea421d44c/Source/URLab/Public/MuJoCo/Core/MjPhysicsEngine.h#L34) 蓝图：
    - **第一阶段：** 资产（带缩放的网格、带文件路径的纹理、带 RGBA/纹理引用的材质）
-   - **第二阶段：** 默认值（类层次结构作为 `UMjDefault` 组件）
+   - **第二阶段：** 默认值（类层次结构作为 [UMjDefault](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/main/Source/URLab/Public/MuJoCo/Components/MjComponent.h#L33) 组件）
    - **第三阶段：** Worldbody (递归的刚体(body)/几何(geom)/关节(joint)/位点(site)层次结构)
    - **第四阶段：** 执行器、传感器、肌腱、equalities、关键帧、接触 对/排除
 5. 将蓝图放置在关卡中，即可进行模拟。
+
+### 准备 Mujoco MJCF 网格
+
+脚本 [Scripts/clean_meshes.py](https://github.com/OpenHUTB/UnrealRoboticsLab/blob/main/Scripts/clean_meshes.py) 准备用于虚幻导入的 MuJoCo MJCF 网格，用于解析 MJCF XML 文件，将所有引用的网格模型（OBJ、STL）转换为 GLB 格式，解决命名冲突（例如，link1.obj 和 link1.stl 均转换为 link1.glb 的情况），并生成一份已更新的 XML 文件，以便直接拖拽导入 Unreal 引擎。
+
+安装：
+```shell
+# cd hutb\Unreal\CarlaUE4\Plugins\UnrealRoboticsLab\Scripts
+# conda create -n nn_3.11 python=3.11 --yes
+# conda activate nn_3.11
+pip install trimesh numpy
+```
+
+使用：
+```shell
+python clean_meshes_trimesh.py <path_to_xml>
+# 示例
+python clean_meshes_trimesh.py "path/to/mujoco_menagerie/franka_emika_panda/panda.xml"
+```
+    
 
 ---
 
