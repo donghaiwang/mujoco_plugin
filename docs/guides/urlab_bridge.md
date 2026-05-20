@@ -17,13 +17,13 @@ git clone https://github.com/donghaiwang/URLab_Bridge.git --recursive
 # 推荐 uv，安装方法：https://hellowac.github.io/uv-zh-cn/getting-started/installation/#__tabbed_1_2
 cd URLab_Bridge
 uv sync                          # 核心依赖 (ZMQ, NumPy, OpenCV, DearPyGui)
-
-cd 
-pip install -e .
-
+# pip install requirements.txt
 # 运行策略 (可选):
 uv sync --extra policy            # + PyTorch, ONNX 等
-uv pip install -e ./RoboJuDo     # 策略框架 (内置的子模块)：安装模块 robojudo
+
+cd RoboJuDo
+pip install -e .
+# uv pip install -e ./RoboJuDo     # 策略框架 (内置的子模块)：安装模块 robojudo
 ```
 
 仪表盘（关节、传感器、摄像头、执行器控制）无需策略扩展即可正常工作。只有当您需要运行神经网络策略时才需要 RoboJuDo。
@@ -35,13 +35,52 @@ uv pip install -e ./RoboJuDo     # 策略框架 (内置的子模块)：安装模
 
 ```bash
 # 启动仪表盘 (关节/传感器/相机查看器、执行器控制、可选策略运行器)，注意在关卡中必须放置 AMjManager，否则连接不上
-uv run src/run.py --ui
+python src/run.py --ui
 
 # 以无头模式（不打开图形界面）运行特定策略
-uv run src/run.py --policy unitree_12dof --prefix g1
+# uv run src/run.py --policy unitree_12dof --prefix g1
+python src/run.py --policy unitree_12dof --prefix g1
+python src/run.py --policy amo --prefix g1 --twist-source zmq
 
 # 测试 ZMQ 连接
-uv run src/run.py --test --prefix g1
+python src/run.py --test --prefix g1
+```
+
+无头模式运行日志：
+```text
+(nn_3.11) D:\hutb\Unreal\CarlaUE4\Plugins\UnrealRoboticsLab\URLab_Bridge>python src/run.py --policy amo --prefix g1
+05-18 08:49:31.805 [DEBUG] [robojudo] ========== robojudo-1.5.0 init done ==========
+
+08:49:31 __main__ INFO — Initializing pipeline: amo @ 50Hz → g1 (twist: keyboard)
+05-18 08:49:31.836 [INFO] [robojudo.pipeline.base_pipeline] Using device: cpu
+[Environment] Dynamic import of environment: UnrealEnv
+05-18 08:49:31.837 [INFO] [robojudo.utils.rotation] base set to pos: [0. 0. 0.], quat: [0. 0. 0. 1.]
+08:49:32 urlab_policy.unreal_env INFO — ZMQ state: tcp://127.0.0.1:5555  control: tcp://127.0.0.1:5556
+08:49:32 urlab_policy.unreal_env INFO — Using specified articulation prefix: 'g1'
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'left_hip_pitch_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'left_hip_roll_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'left_hip_yaw_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'left_knee_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'left_ankle_pitch_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'left_ankle_roll_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'right_hip_pitch_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'right_hip_roll_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'right_hip_yaw_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'right_knee_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'right_ankle_pitch_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env WARNING —   Joint 'right_ankle_roll_joint' not found in ZMQ stream
+08:49:37 urlab_policy.unreal_env INFO —   Mapped 0/12 joints
+08:49:56 urlab_policy.unreal_env INFO — ZMQ subscription filtered to prefix: 'g1'
+08:49:56 urlab_policy.unreal_env INFO — UnrealEnv ready — prefix='g1', 12 DOFs, control_dt=0.0200s (50Hz)
+[Registry][robojudo.controller] KeyboardCtrl, total: 1
+[Controller] Dynamic import of controller: KeyboardCtrl
+[Registry][robojudo.policy] AMOPolicy, total: 1
+[Policy] Dynamic import of policy: AMOPolicy
+05-18 08:49:56.327 [DEBUG] [robojudo.policy.base_policy] Loading jit from D:/hutb/Unreal/CarlaUE4/Plugins/UnrealRoboticsLab/URLab_Bridge/RoboJuDo/assets/models/g1/amo/amo_jit.pt...
+05-18 08:49:56.381 [DEBUG] [robojudo.tools.dof] [DoF] override default_pos with [-0.1, 0.0, 0.0, 0.3, -0.2, 0.0, -0.1, 0.0, 0.0, 0.3, -0.2, 0.0]
+05-18 08:49:56.382 [DEBUG] [robojudo.tools.dof] [DoF] override stiffness with [150, 150, 150, 300, 80, 20, 150, 150, 150, 300, 80, 20]
+05-18 08:49:56.382 [DEBUG] [robojudo.tools.dof] [DoF] override damping with [2, 2, 2, 4, 2, 1, 2, 2, 2, 4, 2, 1]
+05-18 08:49:56.382 [DEBUG] [robojudo.tools.dof] [DoF] override torque_limits with [88, 139, 88, 139, 50, 50, 88, 139, 88, 139, 50, 50]
 ```
 
 ## 可用策略
