@@ -1,6 +1,6 @@
-# Articulation Builder Guide
+# 铰链构建器指南
 
-This guide covers how to build and edit MuJoCo articulations in the Unreal Blueprint editor — both imported from MJCF XML and built from scratch.
+该指南覆盖了如何在虚幻引擎的蓝图编辑器中构建并编辑 Mujoco 铰链的方法（从 MJCF XML 导入和从头开始构建）。
 
 ---
 
