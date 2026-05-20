@@ -6,9 +6,9 @@
 
 ## Overview
 
-An `AMjArticulation` Blueprint contains a hierarchy of MuJoCo components that mirror the MJCF XML structure. When placed in a level and simulated, the plugin converts this hierarchy into a MuJoCo spec, compiles it, and runs physics.
+`AMjArticulation` 蓝图包含一个 MuJoCo 组件的层次结构，该层次结构反映了 MJCF XML 结构。当放置在场景中并进行模拟时，该插件会将此层次结构转换为 MuJoCo 规范，进行编译，并运行物理模拟。
 
-The component hierarchy is organized into folders:
+组件层次结构组织在以下文件夹中：
 
 ```
 ArticulationRoot
