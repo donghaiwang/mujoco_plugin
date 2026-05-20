@@ -14,7 +14,7 @@ git clone https://github.com/google-deepmind/mujoco_menagerie.git
 在该目录下放置这些文件：
 
 - `body_latest.jit` — 主策略网络
-- `adaptation_module_latest.jit` — Observation history adaptation module
+- `adaptation_module_latest.jit` — 观测历史适应模块
 
 ```bash
 git clone https://github.com/Teddy-Liao/walk-these-ways-go2.git
